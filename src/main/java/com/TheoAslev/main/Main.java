@@ -15,10 +15,11 @@ public class Main {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(new Dimension(SCREEN_WIDTH, SCREEN_HEIGHT));
         frame.setResizable(false);
-        //game class added to frame
+        //game JPanel added to frame
         frame.add(game);
         frame.pack();
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
+        game.start();
     }
 }
