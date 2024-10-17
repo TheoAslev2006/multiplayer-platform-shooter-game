@@ -4,8 +4,9 @@ import javax.swing.*;
 import java.awt.*;
 
 public class Game extends JPanel implements Runnable{
-    final int screenWidth;
+	final int screenWidth;
     final int screenHeight;
+    int maxFps = (1000 / 59);
     Thread thread;
     int currentFrames;
     public Game(int screenWidth, int screenHeight){
@@ -42,11 +43,12 @@ public class Game extends JPanel implements Runnable{
         Graphics2D g2d = (Graphics2D)g;
         g2d.setFont(new Font("Arial", Font.PLAIN, 10));
         g2d.setColor(Color.BLACK);
-        g2d.drawString(currentFrames + "fps", 10, 10 );
+        g2d.drawString(currentFrames + " Frames Per Seconds", 10, 10 );
     }
 
     @Override
     public void run() {
+
         int frames = 0;
         double unProcessedSeconds = 0;
         long previousTime = System.nanoTime();
@@ -75,7 +77,7 @@ public class Game extends JPanel implements Runnable{
                 fpsTimer += 1000;
             }
             try {
-                Thread.sleep(33);
+                Thread.sleep(maxFps);
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
