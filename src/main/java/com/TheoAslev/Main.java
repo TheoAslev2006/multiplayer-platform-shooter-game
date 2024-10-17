@@ -1,17 +1,26 @@
-package com.TheoAslev.main;
+package com.TheoAslev;
 
-import com.TheoAslev.main.graphics.Game;
+import com.TheoAslev.graphics.Game;
+import com.TheoAslev.level.Level;
+import com.TheoAslev.level.Levels;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.IOException;
 
 public class Main {
     private final static String TITLE = "platform shooter";
-    public final static int SCREEN_WIDTH = 1600;
-    public final static int SCREEN_HEIGHT = 900;
+    public final static int SCREEN_WIDTH = 1280;
+    public final static int SCREEN_HEIGHT = 960;
     public static void main(String[] args) {
         //initialization of window
+        try {
+            Level level = new Level(Levels.Level1);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
         JFrame frame = new JFrame(TITLE);
         Game game = new Game(SCREEN_WIDTH, SCREEN_HEIGHT);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);

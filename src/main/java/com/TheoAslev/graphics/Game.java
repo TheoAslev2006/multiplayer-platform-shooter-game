@@ -1,7 +1,7 @@
-package com.TheoAslev.main.graphics;
+package com.TheoAslev.graphics;
 
-import com.TheoAslev.main.eventListeners.KeyControls;
-import com.TheoAslev.main.eventListeners.MouseControls;
+import com.TheoAslev.eventListeners.KeyControls;
+import com.TheoAslev.eventListeners.MouseControls;
 
 import javax.swing.*;
 import java.awt.*;
@@ -32,14 +32,6 @@ public class Game extends JPanel implements Runnable{
             thread = new Thread(this);
             thread.start();
         }
-    }
-
-    public int getScreenWidth() {
-        return screenWidth;
-    }
-
-    public int getScreenHeight() {
-        return screenHeight;
     }
 
     public void update(){

@@ -1,6 +1,6 @@
-package com.TheoAslev.main.eventListeners;
+package com.TheoAslev.eventListeners;
 
-import com.TheoAslev.main.Main;
+import com.TheoAslev.Main;
 
 import java.awt.*;
 import java.awt.event.MouseEvent;

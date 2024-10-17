@@ -1,4 +1,4 @@
-package com.TheoAslev.main.eventListeners;
+package com.TheoAslev.eventListeners;
 
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
