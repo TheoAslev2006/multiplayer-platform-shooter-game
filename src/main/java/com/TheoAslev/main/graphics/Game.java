@@ -1,5 +1,8 @@
 package com.TheoAslev.main.graphics;
 
+import com.TheoAslev.main.eventListeners.KeyControls;
+import com.TheoAslev.main.eventListeners.MouseControls;
+
 import javax.swing.*;
 import java.awt.*;
 
@@ -13,10 +16,15 @@ public class Game extends JPanel implements Runnable{
         //initialization of JPanel
         this.screenWidth = screenWidth;
         this.screenHeight = screenHeight;
+        KeyControls keyControls = new KeyControls();
+        MouseControls mouseControls = new MouseControls();
         setPreferredSize(new Dimension(screenWidth, screenHeight));
         setDoubleBuffered(true);
         setOpaque(true);
         setBackground(Color.white);
+        setFocusable(true);
+        addKeyListener(keyControls);
+        addMouseListener(mouseControls);
     }
 
     public void start(){
@@ -38,12 +46,17 @@ public class Game extends JPanel implements Runnable{
 
     }
 
-    public void paintComponent(Graphics g){
-        super.paintComponent(g);
-        Graphics2D g2d = (Graphics2D)g;
+    public void printFpsOnScreen(Graphics2D g2d){
         g2d.setFont(new Font("Arial", Font.PLAIN, 10));
         g2d.setColor(Color.BLACK);
         g2d.drawString(currentFrames + " Frames Per Seconds", 10, 10 );
+    }
+
+    public void paintComponent(Graphics g){
+        super.paintComponent(g);
+        Graphics2D g2d = (Graphics2D)g;
+        printFpsOnScreen(g2d);
+
     }
 
     @Override
