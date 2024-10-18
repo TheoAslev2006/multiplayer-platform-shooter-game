@@ -50,5 +50,8 @@ public class Level {
         //prints the colours as a test fir tg
         System.out.println(Arrays.toString(bytes));
         //TODO add an render for the map with a tile class for different tiles
+        for (int i = 0; i < bytes.length; i++) {
+
+        }
     }
 }
