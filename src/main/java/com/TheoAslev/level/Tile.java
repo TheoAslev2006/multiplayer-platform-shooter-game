@@ -9,9 +9,10 @@ public class Tile {
 
     boolean platform;
     boolean ghost;
-
-    public Tile(TileTexture tileTexture, int width, int height, BufferedImage bufferedImage){
-        String filePath = "textures\\tiles\\tileSet.png";
+    private BufferedImage bufferedImage;
+    public Tile(TileTexture tileTexture){
+        bufferedImage = null;
+        String filePath = "src\\main\\resources\\textures\\tiles\\tileSet.png";
         //initializes buffered image with said tile texture
         switch (tileTexture){
             //initializes solid stone block
@@ -19,7 +20,7 @@ public class Tile {
                 platform = false;
                 ghost = false;
                 try {
-                    bufferedImage = FileReader.loadTileSet(filePath, 4, 4)[TileTexture.SOLID_STONE_BLOCK.ordinal()];
+                    bufferedImage = FileReader.loadTileSet(filePath, 32, 32, 5)[TileTexture.SOLID_STONE_BLOCK.ordinal()];
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
@@ -29,7 +30,7 @@ public class Tile {
                 platform = false;
                 ghost = false;
                 try {
-                    bufferedImage = FileReader.loadTileSet(filePath, 4, 4)[TileTexture.SOLID_GRASS_BLOCK.ordinal()];
+                    bufferedImage = FileReader.loadTileSet(filePath, 32, 32, 5)[TileTexture.SOLID_GRASS_BLOCK.ordinal()];
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
@@ -39,7 +40,7 @@ public class Tile {
                 platform = true;
                 ghost = false;
                 try {
-                    bufferedImage = FileReader.loadTileSet(filePath, 4, 4)[TileTexture.PLATFORM_STONE_BLOCK.ordinal()];
+                    bufferedImage = FileReader.loadTileSet(filePath, 32, 32, 5)[TileTexture.PLATFORM_STONE_BLOCK.ordinal()];
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
@@ -49,7 +50,7 @@ public class Tile {
                 platform = false;
                 ghost = true;
                 try {
-                    bufferedImage = FileReader.loadTileSet(filePath, 4, 4)[TileTexture.PLATFORM_STONE_BLOCK.ordinal()];
+                    bufferedImage = FileReader.loadTileSet(filePath, 32, 32, 5)[TileTexture.PLATFORM_STONE_BLOCK.ordinal()];
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
@@ -58,7 +59,6 @@ public class Tile {
             case GHOST_TRANSPARENT -> {
                 platform = false;
                 ghost = true;
-                bufferedImage = null;
             }
         }
 
@@ -71,4 +71,7 @@ public class Tile {
         return ghost;
     }
 
+    public BufferedImage getBufferedImage() {
+        return bufferedImage;
+    }
 }

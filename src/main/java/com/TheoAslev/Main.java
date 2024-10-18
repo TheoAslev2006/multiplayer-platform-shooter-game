@@ -16,11 +16,6 @@ public class Main {
     public final static int SCREEN_HEIGHT = 960;
     public static void main(String[] args) {
         //initialization of window
-        try {
-            Level level = new Level(Levels.Level1);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
         JFrame frame = new JFrame(TITLE);
         Game game = new Game(SCREEN_WIDTH, SCREEN_HEIGHT);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -29,7 +24,7 @@ public class Main {
         	@Override
         	public void windowClosing(WindowEvent e) {
                 //TODO add serialization to closing event
-        		System.exit(0);
+        		System.exit(1);
         	}
         });
         frame.setSize(new Dimension(SCREEN_WIDTH, SCREEN_HEIGHT));

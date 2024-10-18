@@ -2,16 +2,20 @@ package com.TheoAslev.graphics;
 
 import com.TheoAslev.eventListeners.KeyControls;
 import com.TheoAslev.eventListeners.MouseControls;
+import com.TheoAslev.level.Level;
+import com.TheoAslev.level.Levels;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.IOException;
 
 public class Game extends JPanel implements Runnable{
 	final int screenWidth;
     final int screenHeight;
-    int maxFps = (1000 / 59);
+    int maxFps = (1000 / 60);
     Thread thread;
     int currentFrames;
+    Level level;
     public Game(int screenWidth, int screenHeight){
         //initialization of JPanel
         this.screenWidth = screenWidth;
@@ -25,6 +29,11 @@ public class Game extends JPanel implements Runnable{
         setFocusable(true);
         addKeyListener(keyControls);
         addMouseListener(mouseControls);
+        try {
+            level = new Level(Levels.Level1);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public void start(){
@@ -48,7 +57,7 @@ public class Game extends JPanel implements Runnable{
         super.paintComponent(g);
         Graphics2D g2d = (Graphics2D)g;
         printFpsOnScreen(g2d);
-
+        level.render(g2d);
     }
 
     @Override
@@ -87,6 +96,7 @@ public class Game extends JPanel implements Runnable{
                 throw new RuntimeException(e);
             }
         }
+        repaint();
 
     }
 }

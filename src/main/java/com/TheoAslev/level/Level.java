@@ -1,19 +1,25 @@
 package com.TheoAslev.level;
 
 import com.TheoAslev.utils.FileReader;
-
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.logging.*;
 
 public class Level {
     Levels levels;
-    String[] filePaths = {"src\\main\\resources\\textures\\tiles\\test.png","",""};
+    String[] filePaths = {"src\\main\\resources\\model\\level\\map.png","",""};
     BufferedImage bufferedImage;
-
+    BufferedImage texture;
+    HashMap<String, Tile> tileMap = new HashMap<>();
+    byte[] bytes;
+    int textureScale = 4;
     public Level(Levels levels) throws IOException {
-        byte[] bytes;
+        bytes = new byte[30*40];
+        this.levels = levels;
         //load a buffered image from specific filepath depending on level chosen
         switch (levels){
             case Level1:
@@ -29,29 +35,43 @@ public class Level {
 
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         //each pixel is read and converted into a colour from the buffered image
-        //TODO change the x bounds and y bounds for the for loops in order to take bigger images
-        for (int y = 0; y < 4; y++) {
-            for (int x = 0; x < 4; x++) {
+        for (int y = 0; y < 30; y++) {
+            for (int x = 0; x < 40; x++) {
                 int pixel = bufferedImage.getRGB(x , y);
                 int red = (pixel >> 16) & 0xFF;
                 int green =  (pixel >> 8) & 0xFF;
                 int blue =  pixel & 0xFF;
                 if ( blue == 255 && green == 255 && red == 255){
-                    byteArrayOutputStream.write(1);
+                    byteArrayOutputStream.write(0);
                 } else if ( blue == 0 && green == 0 && red == 0){
-                    byteArrayOutputStream.write(2);
+                    byteArrayOutputStream.write(1);
                 } else if (red == 255 && green == 0 && blue == 0){
+                    byteArrayOutputStream.write(2);
+                } else if (red == 0 && green == 255 && blue == 0){
                     byteArrayOutputStream.write(3);
+                }else if (red == 0 && green == 0 && blue == 255){
+                    byteArrayOutputStream.write(4);
                 }
             }
         }
-        //the colours written into the output stream are converted into a byte array
         bytes = byteArrayOutputStream.toByteArray();
-        //prints the colours as a test fir tg
-        System.out.println(Arrays.toString(bytes));
-        //TODO add an render for the map with a tile class for different tiles
-        for (int i = 0; i < bytes.length; i++) {
+    }
+    public void render(Graphics2D g2d){
+        for (int y = 0; y < 30; y++) {
+            for (int x = 0; x < 40; x++) {
+                String tileKey = x  + "," + y;
+                TileTexture tileTexture = TileTexture.getInstance(bytes[y * 40 + x]);
 
+                if (!tileMap.containsKey(tileKey)) {
+                    tileMap.put(tileKey, new Tile(tileTexture));
+                }
+
+                BufferedImage tileImage = tileMap.get(tileKey).getBufferedImage();
+
+                if (tileImage != null){
+                    g2d.drawImage(tileImage, x * 32, y * 32,32, 32, null);
+                }
+            }
         }
     }
 }
