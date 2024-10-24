@@ -9,7 +9,7 @@ public class Tile {
 
     boolean platform;
     boolean ghost;
-    private BufferedImage bufferedImage;
+    public BufferedImage bufferedImage;
     public Tile(TileTexture tileTexture){
         bufferedImage = null;
         String filePath = "src\\main\\resources\\textures\\tiles\\tileSet.png";

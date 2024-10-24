@@ -17,10 +17,8 @@ public class FileReader {
         File file = new File(fileName);
         BufferedImage tileSet = ImageIO.read(file);
         BufferedImage[] tileTextures = new BufferedImage[count];
-        for (int i = 1; i < tileSet.getHeight() / tileHeight; i++) {
-            for (int j = 0; j < tileSet.getWidth() / tileWidth; j++) {
-                tileTextures[j * i] = tileSet.getSubimage(j * tileWidth, i * tileHeight, tileWidth, tileHeight);
-            }
+        for (int j = 0; j < tileSet.getWidth() / tileWidth; j++) {
+            tileTextures[j ] = tileSet.getSubimage(j * tileWidth, 0, tileWidth, tileHeight);
         }
         return tileTextures;
     }

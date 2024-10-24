@@ -1,14 +1,11 @@
 package com.TheoAslev;
 
 import com.TheoAslev.graphics.Game;
-import com.TheoAslev.level.Level;
-import com.TheoAslev.level.Levels;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.io.IOException;
 
 public class Main {
     private final static String TITLE = "platform shooter";

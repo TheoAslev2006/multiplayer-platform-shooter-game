@@ -5,7 +5,7 @@ import java.awt.event.KeyListener;
 
 public class KeyControls implements KeyListener {
 
-    boolean right,left,jump;
+    public boolean right,left,jump;
 
     @Override
     public void keyTyped(KeyEvent e) {
