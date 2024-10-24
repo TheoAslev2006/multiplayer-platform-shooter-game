@@ -33,7 +33,10 @@ public class Player extends Character implements Controls{
 
     @Override
     public void jump() {
-
+        if (onGround){
+            velY = -10;
+            onGround = false;
+        }
     }
     @Override
     public void shoot() {
@@ -49,14 +52,31 @@ public class Player extends Character implements Controls{
     public void fall() {
         String tileKey = x / 32 + "," + (y / 32 + 1);
         if (tileMap.get(tileKey) != null && velY != 0){
-            if (!tileMap.get(tileKey).isGhost()){
-                if ( ((y + velY + 0.1) % 32!= 0)){
-                    y = y +(int) (velY - ((y + velY + 0.1) % 32));
-                    velY = 0;
-                    onGround = true;
+            if (!tileMap.get(tileKey).isGhost()) {
+                if (!tileMap.get(tileKey).isPlatform()){
+                    if (((y + velY + 0.1) % 32 != 0) && velY >= 0) {
+                        y = y + (int) (velY - ((y + velY + 0.1) % 32));
+                        velY = 0;
+                        onGround = true;
+                    }
+                }
+                else if (tileMap.get(tileKey).isPlatform()){
+                    if (((y + velY + 0.1) % 32 != 0) && velY >= 0) {
+                        y = y + (int) (velY - ((y + velY + 0.1) % 32));
+                        velY = 0;
+                        onGround = true;
+                    }
                 }
             }
         }
+        if (tileMap.get(tileKey) != null){
+            if (tileMap.get(tileKey).isGhost()){
+                onGround = false;
+            }
+        } else {
+            onGround = false;
+        }
+
     }
 
     public void renderPlayer(Graphics2D g2d){
@@ -66,7 +86,7 @@ public class Player extends Character implements Controls{
         velX *= 0.9;
         x += (int) velX;
         if (!onGround){
-            velY += 0.1;
+            velY += 0.2;
             y += (int) velY;
         }
     }
