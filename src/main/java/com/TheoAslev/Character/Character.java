@@ -52,7 +52,7 @@ public class Character{
 //        else {
 //            g2d.drawImage(characterImage, x, y, null);
 //        }
-        g2d.drawString(name, x, y+50);
+        g2d.drawString(name, x + 7, y-10);
         g2d.drawImage(characterImage, x, y , null);
     }
 }
