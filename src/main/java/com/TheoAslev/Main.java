@@ -1,8 +1,6 @@
 package com.TheoAslev;
 
-import com.TheoAslev.StartScreen.StartScreen;
 import com.TheoAslev.graphics.Game;
-
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -12,29 +10,36 @@ import java.awt.event.WindowEvent;
 
 public class Main {
     private final static String TITLE = "platform shooter";
-    public final static int SCREEN_WIDTH = 1280;
-    public final static int SCREEN_HEIGHT = 960;
+    public static int SCREEN_WIDTH = 1280;
+    public static int SCREEN_HEIGHT = 960;
 
     public Main(){
         initStartScreen();
     }
 
     public void initStartScreen(){
+        //StartScreen Frame
         JFrame frame = new JFrame("StartScreen");
-        frame.setPreferredSize(new Dimension(500,500));
+        frame.setPreferredSize(new Dimension(700,500));
         frame.setVisible(true);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setBackground(Color.BLACK);
-        JButton button = new JButton("Press");
-        button.setBackground(Color.WHITE);
-        button.addActionListener(new ActionListener() {
+        frame.setLocationRelativeTo(null);
+
+        //Creates Start button
+        JButton startButton = new JButton("Start Game");
+        startButton.setBackground(Color.GRAY);
+        startButton.setSize(300,75);
+        startButton.setLocation(50, 30);
+        startButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 initGame();
                 frame.setVisible(false);
             }
         });
-        frame.add(button);
+
+        //adds the screen objects and shows the initScreen
+        frame.add(startButton);
         frame.pack();
         frame.setVisible(true);
     }
