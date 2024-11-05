@@ -1,6 +1,8 @@
 package com.TheoAslev.Character;
 
+import com.TheoAslev.Main;
 import com.TheoAslev.level.Tile;
+import com.TheoAslev.objects.Bullet;
 
 import java.awt.*;
 import java.util.HashMap;
@@ -39,7 +41,13 @@ public class Player extends Character implements Controls{
         }
     }
     @Override
-    public void shoot() {
+    public Bullet shoot(double radians) {
+        radians = Math.toRadians(radians);
+        if (radians <= 0)
+            radians += Math.toRadians(360);
+        System.out.println(radians);
+        System.out.println("speed: " + Math.cos(radians) * 10 + " " + Math.sin(radians) * 10);
+        return new Bullet( Math.cos(radians) * 100, Math.sin(radians) * 100, Math.toDegrees(radians), new Point(x, y));
 
     }
 

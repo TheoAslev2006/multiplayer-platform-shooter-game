@@ -64,4 +64,13 @@ public class Character{
         g2d.drawString(name, x + 7, y-10);
         g2d.drawImage(animation[characterAnimationInstance], x, y , null);
     }
+
+    public int getX() {
+        return x;
+    }
+
+    public int getY() {
+        return y;
+    }
 }
+

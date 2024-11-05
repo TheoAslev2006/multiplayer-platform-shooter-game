@@ -1,6 +1,7 @@
 package com.TheoAslev.Character;
 
 import com.TheoAslev.level.Tile;
+import com.TheoAslev.objects.Bullet;
 
 import java.awt.*;
 import java.util.HashMap;
@@ -34,8 +35,8 @@ public class Enemy extends Character implements Controls{
     }
 
     @Override
-    public void shoot() {
-
+    public Bullet shoot(double radians) {
+    return null;
     }
 
     @Override
