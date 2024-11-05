@@ -21,6 +21,7 @@ public class Game extends JPanel implements Runnable{
     Player player;
     KeyControls keyControls;
     MouseControls mouseControls;
+    long threadRunTime;
     public Game(int screenWidth, int screenHeight){
         //initialization of JPanel
         this.screenWidth = screenWidth;
@@ -50,9 +51,11 @@ public class Game extends JPanel implements Runnable{
         }
     }
 
-    public void update(double deltaTime){
+    public void update(){
         //updates the character location upon movement
+
         player.fall();
+        player.tick(threadRunTime);
         player.updatePlayer();
         if (keyControls.left){
             player.moveLeft(3);
@@ -62,6 +65,11 @@ public class Game extends JPanel implements Runnable{
         }
         if (keyControls.jump){
             player.jump();
+        }
+        if (mouseControls.inWindow){
+            if (mouseControls.shoot){
+                player.shoot();
+            }
         }
     }
 
@@ -101,10 +109,11 @@ public class Game extends JPanel implements Runnable{
                 unProcessedSeconds-=secondsPerTick;
 
             }
-            update(unProcessedSeconds);
+            update();
             repaint();
             frames++;
-
+            threadRunTime += 1;
+            System.out.println(threadRunTime);
             if (System.currentTimeMillis() - fpsTimer >= 1000){
                 currentFrames = frames;
                 frames = 0;

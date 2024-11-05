@@ -7,10 +7,10 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 
 public class MouseControls implements MouseListener {
-    boolean shoot;
+    public boolean shoot;
     int monitorWidth = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDisplayMode().getWidth();
     int monitorHeight = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDisplayMode().getHeight();
-    boolean inWindow = (
+    public boolean inWindow = (
             (MouseInfo.getPointerInfo().getLocation().x <= (monitorWidth/ 2 + Main.SCREEN_WIDTH / 2)
             && MouseInfo.getPointerInfo().getLocation().x >= (monitorWidth / 2 - Main.SCREEN_WIDTH / 2))
             &&(MouseInfo.getPointerInfo().getLocation().y <= (monitorHeight/ 2 + Main.SCREEN_HEIGHT / 2)

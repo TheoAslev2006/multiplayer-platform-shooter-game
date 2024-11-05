@@ -11,48 +11,57 @@ public class Character{
     int y;
     double velY;
     double velX;
-
+    int characterAnimationInstance = 0;
     int health;
     boolean dead;
     boolean jump;
     BufferedImage characterImage;
-    BufferedImage[] animation = new BufferedImage[5];
-    String[] filePath = { "src\\main\\resources\\textures\\tiles\\CharacterNull.png" ,"animation"};
+    BufferedImage[] animation = new BufferedImage[3];
+    String[] filePath = {
+            "src\\main\\resources\\textures\\character\\CharacterNull.png"
+            ,"src\\main\\resources\\textures\\character\\Character_not_moving.png"
+            ,"src\\main\\resources\\textures\\character\\Character_moving_1.png"
+            ,"src\\main\\resources\\textures\\character\\Character_moving_2.png"
+    };
     public void loadCharacter(){
         boolean loaded = false;
         int instance = 0;
-        while (!loaded)
+        while (!loaded){
             try {
-                characterImage = FileReader.loadFile(filePath[0]);
-                //animation = FileReader.loadTileSet(filePath[1], 32, 32, 5);
+                animation[0] = FileReader.loadFile(filePath[1]);
+                animation[1] = FileReader.loadFile(filePath[2]);
+                animation[2] = FileReader.loadFile(filePath[3]);
                 loaded = true;
             } catch (IOException e) {
                 instance++;
-                if (instance == 5) throw new RuntimeException();
+                if (instance == 5){
+                    try {
+                        animation[0] = FileReader.loadFile(filePath[characterAnimationInstance + 1]);
+                        loaded = true;
+                    } catch (IOException ex) {
+                        try {
+                            characterImage = FileReader.loadFile(filePath[0]);
+                        } catch (IOException exc) {
+                            throw new RuntimeException(exc);
+                        }
+                    }
+                }
             }
+        }
+    }
+    public void tick(long threadRunTime){
+        if (velX != 0 && threadRunTime % 20 == 0){
+            characterAnimationInstance = 2;
+        }else if (velX != 0 && threadRunTime % 10 == 0){
+            characterAnimationInstance = 1;
+        }
+        if (velX <= 0.7 && velX >= -0.7){
+            characterAnimationInstance = 0;
+        }
+
     }
     public void renderCharacter(Graphics2D g2d, boolean movingRight, boolean movingLeft, String name){
-//        if (movingLeft){
-//            if (tick % 2 == 1)
-//                g2d.drawImage(animation[0], x, y, null);
-//            if (tick % 2 == 0)
-//                g2d.drawImage(animation[1], x, y, null);
-//            tick++;
-//        }
-//        if (movingRight){
-//            if (tick % 2 == 1)
-//                g2d.drawImage(animation[2], x, y, null);
-//            if (tick % 2 == 0)
-//                g2d.drawImage(animation[3], x, y, null);
-//            tick++;
-//        }
-//        if (jump){
-//            g2d.drawImage(animation[4], x, y, null);
-//        }
-//        else {
-//            g2d.drawImage(characterImage, x, y, null);
-//        }
         g2d.drawString(name, x + 7, y-10);
-        g2d.drawImage(characterImage, x, y , null);
+        g2d.drawImage(animation[characterAnimationInstance], x, y , null);
     }
 }

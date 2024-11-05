@@ -12,7 +12,7 @@ public class Player extends Character implements Controls{
     String name = "You";
     final int startJumpVelocity = -5;
     HashMap<String, Tile> tileMap;
-    public Player( HashMap<String, Tile> tileMap){
+    public Player(HashMap<String, Tile> tileMap){
         this.tileMap = tileMap;
         x = 200;
         y = 200;
