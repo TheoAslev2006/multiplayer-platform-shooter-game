@@ -1,6 +1,5 @@
-package com.TheoAslev.Character;
+package com.TheoAslev.character;
 
-import com.TheoAslev.Main;
 import com.TheoAslev.level.Tile;
 import com.TheoAslev.objects.Bullet;
 

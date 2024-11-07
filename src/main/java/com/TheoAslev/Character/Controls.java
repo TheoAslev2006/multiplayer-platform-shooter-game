@@ -1,10 +1,6 @@
-package com.TheoAslev.Character;
+package com.TheoAslev.character;
 
-import com.TheoAslev.level.Tile;
 import com.TheoAslev.objects.Bullet;
-
-import java.awt.*;
-import java.util.HashMap;
 
 public interface Controls {
     public void moveRight(double speed);

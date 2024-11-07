@@ -1,4 +1,4 @@
-package com.TheoAslev.Character;
+package com.TheoAslev.character;
 
 import com.TheoAslev.utils.FileReader;
 

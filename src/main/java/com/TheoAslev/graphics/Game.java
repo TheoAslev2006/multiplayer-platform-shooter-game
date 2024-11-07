@@ -1,7 +1,6 @@
 package com.TheoAslev.graphics;
 
-import com.TheoAslev.Character.Character;
-import com.TheoAslev.Character.Player;
+import com.TheoAslev.character.Player;
 import com.TheoAslev.Main;
 import com.TheoAslev.eventListeners.KeyControls;
 import com.TheoAslev.eventListeners.MouseControls;
@@ -13,7 +12,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.geom.Point2D;
 import java.io.IOException;
 import java.util.ArrayList;
 
