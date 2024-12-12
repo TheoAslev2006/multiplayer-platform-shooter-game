@@ -1,20 +1,26 @@
 package com.TheoAslev.character;
 
+import com.TheoAslev.graphics.Game;
 import com.TheoAslev.level.Tile;
 import com.TheoAslev.objects.Bullet;
 
 import java.awt.*;
+import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashMap;
 
-public class Player extends Character implements Controls{
+public class Player extends Character implements Controls, Serializable {
     boolean movingRight = false;
     boolean movingLeft = false;
     boolean onGround = false;
     String name = "You";
     final int startJumpVelocity = -5;
     HashMap<String, Tile> tileMap;
-    public Player(HashMap<String, Tile> tileMap){
-        this.tileMap = tileMap;
+
+    ArrayList<Bullet> bullets = new ArrayList<>();
+    public Player(Game game){
+
+        this.tileMap = game.level.tileMap;
         x = 200;
         y = 200;
         loadCharacter();
@@ -89,6 +95,7 @@ public class Player extends Character implements Controls{
     public void renderPlayer(Graphics2D g2d){
         renderCharacter(g2d, true, false, name);
     }
+
     public void updatePlayer(){
         velX *= 0.9;
         x += (int) velX;
@@ -98,4 +105,11 @@ public class Player extends Character implements Controls{
         }
     }
 
+    public ArrayList<Bullet> getBullets() {
+        return bullets;
+    }
+
+    public HashMap<String, Tile> getTileMap() {
+        return tileMap;
+    }
 }

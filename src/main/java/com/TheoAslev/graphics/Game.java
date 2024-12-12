@@ -7,31 +7,45 @@ import com.TheoAslev.eventListeners.MouseControls;
 import com.TheoAslev.level.Level;
 import com.TheoAslev.level.Levels;
 import com.TheoAslev.objects.Bullet;
+import com.TheoAslev.server.Client;
+import com.TheoAslev.server.ClientProcess;
+import com.TheoAslev.server.Server;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
+import java.net.Socket;
 import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.Objects;
+import java.util.Queue;
 
 public class Game extends JPanel implements Runnable{
 	final int screenWidth;
     final int screenHeight;
+    final boolean isHosting;
     int maxFps = (1000 / 60);
-    Thread thread;
     int currentFrames;
-    Level level;
-    Player player;
+    public long threadRunTime;
+    public Queue<JSONObject> serverQueue;
+    Server server;
+    Client client;
+    Thread thread;
+    public Level level;
     KeyControls keyControls;
     MouseControls mouseControls;
-    long threadRunTime;
     Point mouseLocation;
     ArrayList<Bullet> bullets = new ArrayList<>();
-    public Game(int screenWidth, int screenHeight){
+    public ArrayList<Player> players = new ArrayList<>();
+    public Game(int screenWidth, int screenHeight, boolean isHosting){
         //initialization of JPanel
         this.screenWidth = screenWidth;
         this.screenHeight = screenHeight;
+        this.isHosting = isHosting;
         keyControls = new KeyControls();
         mouseControls = new MouseControls();
         setPreferredSize(new Dimension(screenWidth, screenHeight));
@@ -50,10 +64,17 @@ public class Game extends JPanel implements Runnable{
         });
         try {
             level = new Level(Levels.Level1);
-            player = new Player(level.tileMap);
+            players.add(new Player( this)) ;
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+        if (isHosting) {
+            server = new Server(this);
+            System.out.println("server created");
+        }else {
+            client = new Client(this);
+        }
+        serverQueue = new LinkedList<>();
     }
 
     public void start(){
@@ -61,11 +82,42 @@ public class Game extends JPanel implements Runnable{
         if (thread == null){
             thread = new Thread(this);
             thread.start();
+            if (server!=null)
+                new Thread(server).start();
+        }
+    }
+
+    public void serverUpdate(){
+        for (int i = 0; i < serverQueue.size(); i++) {
+            parseJson(serverQueue.poll());
+        }
+    }
+
+    public void parseJson(JSONObject jsonPackage){
+        if (jsonPackage.has("players")){
+            JSONArray playerData = jsonPackage.getJSONArray("players");
+            if (playerData.length() % 2 != 0) throw new RuntimeException();
+            for (int i = 0; i < playerData.length(); i+=2) {
+                int id = playerData.getInt(i);
+                String[] cords = playerData.getString(i + 1).split(",");
+                int x = Integer.parseInt(cords[0]);
+                int y = Integer.parseInt(cords[1]);
+
+                if (id < 0 || id >= players.size()){
+                    System.err.println("player size and id mismatch error");
+                }
+                players.get(id).setX(x);
+                players.get(id).setY(y);
+                System.out.println("playersize: " + players.size());
+            }
         }
     }
 
     public void update(){
+
+        serverUpdate();
         //updates the character location upon movement
+        Player player = players.getFirst();
         player.fall();
         player.tick(threadRunTime);
         player.updatePlayer();
@@ -92,13 +144,18 @@ public class Game extends JPanel implements Runnable{
                 mouseControls.shoot = false;
             }
         }
-            for (int i = 0; i < bullets.size(); i++) {
-                bullets.get(i).move(threadRunTime);
-                if (bullets.get(i).x <= 0 || bullets.get(i).y <= 0 || bullets.get(i).x >= Main.SCREEN_WIDTH || bullets.get(i).y >= Main.SCREEN_HEIGHT) {
-                    bullets.remove(bullets.get(i));
-                }
-
+        for (int i = 0; i < bullets.size(); i++) {
+            bullets.get(i).move(threadRunTime);
+            if (bullets.get(i).x <= 0 || bullets.get(i).y <= 0 || bullets.get(i).x >= Main.SCREEN_WIDTH || bullets.get(i).y >= Main.SCREEN_HEIGHT) {
+                bullets.remove(bullets.get(i));
             }
+        }
+        if (threadRunTime % 400 == 0){
+            System.out.println(players.toString());
+            System.out.println(players.size());
+            System.out.println(serverQueue.size());
+
+        }
     }
 
     public void printFpsOnScreen(Graphics2D g2d){
@@ -115,7 +172,10 @@ public class Game extends JPanel implements Runnable{
         Graphics2D g2d = (Graphics2D)g;
         printFpsOnScreen(g2d);
         level.render(g2d);
-        player.renderPlayer(g2d);
+        if (!players.isEmpty())
+            for (int i = 0; i < players.size(); i++) {
+                players.get(i).renderPlayer(g2d);
+            }
         for (int i = 0; i < bullets.size(); i++) {
             bullets.get(i).render(g2d);
         }
@@ -142,6 +202,7 @@ public class Game extends JPanel implements Runnable{
 
             }
             update();
+            //System.out.println("updated");
             repaint();
             frames++;
             threadRunTime += 1;
@@ -150,6 +211,7 @@ public class Game extends JPanel implements Runnable{
                 frames = 0;
                 fpsTimer += 1000;
             }
+
             try {
                 Thread.sleep(maxFps);
             } catch (InterruptedException e) {

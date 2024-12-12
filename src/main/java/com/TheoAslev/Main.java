@@ -1,52 +1,38 @@
 package com.TheoAslev;
 
 import com.TheoAslev.graphics.Game;
+import com.TheoAslev.server.Server;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.util.Scanner;
 
 public class Main {
+
     private final static String TITLE = "platform shooter";
     public static int SCREEN_WIDTH = 1280;
     public static int SCREEN_HEIGHT = 960;
 
-    public Main(){
-        initStartScreen();
+    public Main(boolean isHosting){
+        System.out.println("Starting...");
+        initGame(isHosting);
     }
 
     public void initStartScreen(){
-        //StartScreen Frame
-        JFrame frame = new JFrame("StartScreen");
-        frame.setPreferredSize(new Dimension(700,500));
-        frame.setVisible(true);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setLocationRelativeTo(null);
 
-        //Creates Start button
-        JButton startButton = new JButton("Start Game");
-        startButton.setBackground(Color.GRAY);
-        startButton.setSize(300,75);
-        startButton.setLocation(50, 30);
-        startButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                initGame();
-                frame.setVisible(false);
-            }
-        });
 
-        //adds the screen objects and shows the initScreen
-        frame.add(startButton);
-        frame.pack();
-        frame.setVisible(true);
     }
 
-    public void initGame(){
+    public void initGame(boolean isHosting){
+        Scanner scanner = new Scanner(System.in);
+        boolean mode = scanner.nextBoolean();
+
         JFrame frame = new JFrame(TITLE);
-        Game game = new Game(SCREEN_WIDTH, SCREEN_HEIGHT);
+        Game game = new Game(SCREEN_WIDTH, SCREEN_HEIGHT, mode);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         //saves data on windows close
         frame.addWindowListener(new WindowAdapter(){
@@ -65,9 +51,11 @@ public class Main {
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
         game.start();
+        System.out.println("Game started");
     }
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(Main::new);
+        new Main(true);
+        new Main(false);
     }
 }

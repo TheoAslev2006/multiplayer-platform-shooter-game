@@ -1,11 +1,13 @@
 package com.TheoAslev.level;
 
+import com.TheoAslev.server.Server;
 import com.TheoAslev.utils.FileReader;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.io.Serializable;
 
-public class Tile {
+public class Tile{
 
     boolean platform;
     boolean ghost;
