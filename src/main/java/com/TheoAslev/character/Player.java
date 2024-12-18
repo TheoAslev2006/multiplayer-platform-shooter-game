@@ -18,8 +18,8 @@ public class Player extends Character implements Controls, Serializable {
     HashMap<String, Tile> tileMap;
 
     ArrayList<Bullet> bullets = new ArrayList<>();
-    public Player(Game game){
-
+    public Player(Game game, String name){
+        this.name = name;
         this.tileMap = game.level.tileMap;
         x = 200;
         y = 200;
@@ -108,8 +108,10 @@ public class Player extends Character implements Controls, Serializable {
     public ArrayList<Bullet> getBullets() {
         return bullets;
     }
-
     public HashMap<String, Tile> getTileMap() {
         return tileMap;
+    }
+    public String getName() {
+        return name;
     }
 }

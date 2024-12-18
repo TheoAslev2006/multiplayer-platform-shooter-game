@@ -5,8 +5,11 @@ import com.TheoAslev.character.Player;
 import com.TheoAslev.graphics.Game;
 
 import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.Serializable;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 
 public class Client implements Serializable {

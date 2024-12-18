@@ -30,9 +30,12 @@ public class Main {
     public void initGame(boolean isHosting){
         Scanner scanner = new Scanner(System.in);
         boolean mode = scanner.nextBoolean();
-
+        String name;
+        if (mode)
+            name = "server";
+        else name = "client";
         JFrame frame = new JFrame(TITLE);
-        Game game = new Game(SCREEN_WIDTH, SCREEN_HEIGHT, mode);
+        Game game = new Game(SCREEN_WIDTH, SCREEN_HEIGHT, mode, name);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         //saves data on windows close
         frame.addWindowListener(new WindowAdapter(){
@@ -44,7 +47,6 @@ public class Main {
         });
         frame.setSize(new Dimension(SCREEN_WIDTH, SCREEN_HEIGHT));
         frame.setResizable(false);
-        frame.pack();
         //game JPanel added to frame
         frame.add(game);
         frame.pack();
