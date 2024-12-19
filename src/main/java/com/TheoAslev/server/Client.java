@@ -13,20 +13,14 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 
 public class Client implements Serializable {
-    Socket socket;
-    public ArrayList<Player> players;
-    public ClientProcess clientProcess;
-    public Client(Game game){
+    public Client(Game game) {
         try {
-            Socket socket = new Socket("127.0.0.1",5564);
+            Socket socket = new Socket("127.0.0.1", 5564);
             new Thread(new ClientProcess(socket, game)).start();
-        }catch (IOException e){
+        } catch (IOException e) {
             System.out.println("no connection found");
             throw new RuntimeException();
         }
 
     }
-
-
-
 }

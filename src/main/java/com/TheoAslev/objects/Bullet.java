@@ -16,11 +16,12 @@ public class Bullet {
     int rectY;
     final double velY;
     final double velX;
-    final double radians;
+    public final double radians;
     String filepath = "src\\main\\resources\\textures\\objects\\bullet.png";
     BufferedImage bufferedImage;
     AffineTransform affineTransform;
     AffineTransformOp affineTransformOp;
+
     public Bullet(double velX, double velY, double degrees, Point orgin) {
         this.velY = velY;
         this.velX = velX;
@@ -45,12 +46,13 @@ public class Bullet {
 
     }
 
-    public void render(Graphics2D g2d){
+    public void render(Graphics2D g2d) {
         //renders bullet and square for viewing bullet angle
-        g2d.drawImage(affineTransformOp.filter(bufferedImage, null), x + 3 , y , null);
+        g2d.drawImage(affineTransformOp.filter(bufferedImage, null), x + 3, y, null);
         g2d.drawRect(rectX + 11, rectY + 10, 10, 10);
     }
-    public void move(long runtime){
+
+    public void move(long runtime) {
         //moves bullet every 2 ticks for better looks
         if (runtime % 2 == 0) {
             x += (int) velX;

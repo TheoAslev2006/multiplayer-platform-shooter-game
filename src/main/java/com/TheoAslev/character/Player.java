@@ -17,8 +17,7 @@ public class Player extends Character implements Controls, Serializable {
     final int startJumpVelocity = -5;
     HashMap<String, Tile> tileMap;
 
-    ArrayList<Bullet> bullets = new ArrayList<>();
-    public Player(Game game, String name){
+    public Player(Game game, String name) {
         this.name = name;
         this.tileMap = game.level.tileMap;
         x = 200;
@@ -28,23 +27,24 @@ public class Player extends Character implements Controls, Serializable {
 
     @Override
     public void moveRight(double speed) {
-        velX += speed/5;
+        velX += speed / 5;
         velX = Math.max(velX, 5);
     }
 
     @Override
     public void moveLeft(double speed) {
-        velX -= speed/5;
+        velX -= speed / 5;
         velX = Math.min(velX, -5);
     }
 
     @Override
     public void jump() {
-        if (onGround){
+        if (onGround) {
             velY = -10;
             onGround = false;
         }
     }
+
     @Override
     public Bullet shoot(double radians) {
         radians = Math.toRadians(radians);
@@ -52,7 +52,7 @@ public class Player extends Character implements Controls, Serializable {
             radians += Math.toRadians(360);
         System.out.println(radians);
         System.out.println("speed: " + Math.cos(radians) * 10 + " " + Math.sin(radians) * 10);
-        return new Bullet( Math.cos(radians) * 100, Math.sin(radians) * 100, Math.toDegrees(radians), new Point(x, y));
+        return new Bullet(Math.cos(radians) * 100, Math.sin(radians) * 100, Math.toDegrees(radians), new Point(x, y));
 
     }
 
@@ -64,16 +64,15 @@ public class Player extends Character implements Controls, Serializable {
     @Override
     public void fall() {
         String tileKey = x / 32 + "," + (y / 32 + 1);
-        if (tileMap.get(tileKey) != null && velY != 0){
+        if (tileMap.get(tileKey) != null && velY != 0) {
             if (!tileMap.get(tileKey).isGhost()) {
-                if (!tileMap.get(tileKey).isPlatform()){
+                if (!tileMap.get(tileKey).isPlatform()) {
                     if (((y + velY + 0.1) % 32 != 0) && velY >= 0) {
                         y = y + (int) (velY - ((y + velY + 0.1) % 32));
                         velY = 0;
                         onGround = true;
                     }
-                }
-                else if (tileMap.get(tileKey).isPlatform()){
+                } else if (tileMap.get(tileKey).isPlatform()) {
                     if (((y + velY + 0.1) % 32 != 0) && velY >= 0) {
                         y = y + (int) (velY - ((y + velY + 0.1) % 32));
                         velY = 0;
@@ -82,8 +81,8 @@ public class Player extends Character implements Controls, Serializable {
                 }
             }
         }
-        if (tileMap.get(tileKey) != null){
-            if (tileMap.get(tileKey).isGhost()){
+        if (tileMap.get(tileKey) != null) {
+            if (tileMap.get(tileKey).isGhost()) {
                 onGround = false;
             }
         } else {
@@ -92,25 +91,23 @@ public class Player extends Character implements Controls, Serializable {
 
     }
 
-    public void renderPlayer(Graphics2D g2d){
+    public void renderPlayer(Graphics2D g2d) {
         renderCharacter(g2d, true, false, name);
     }
 
-    public void updatePlayer(){
+    public void updatePlayer() {
         velX *= 0.9;
         x += (int) velX;
-        if (!onGround){
+        if (!onGround) {
             velY += 0.2;
             y += (int) velY;
         }
     }
 
-    public ArrayList<Bullet> getBullets() {
-        return bullets;
-    }
     public HashMap<String, Tile> getTileMap() {
         return tileMap;
     }
+
     public String getName() {
         return name;
     }

@@ -3,6 +3,7 @@ package com.TheoAslev.server;
 
 import com.TheoAslev.character.Player;
 import com.TheoAslev.graphics.Game;
+import com.TheoAslev.objects.Bullet;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -11,15 +12,11 @@ import java.io.*;
 import java.net.Socket;
 import java.net.SocketException;
 import java.nio.charset.StandardCharsets;
-import java.util.LinkedList;
-import java.util.Queue;
-import java.util.Scanner;
-import java.util.WeakHashMap;
+import java.util.*;
 
 
 public class ClientProcess implements Serializable, Runnable {
     private Socket client;
-    Thread thread;
     Game game;
     InputStreamReader inputStream;
     OutputStreamWriter outputStream;
@@ -29,15 +26,14 @@ public class ClientProcess implements Serializable, Runnable {
         jsonPackage = new JSONObject();
         this.client = client;
         this.game = game;
-        Scanner s = new Scanner(System.in);
+        //stream initialization
         try {
             inputStream = new InputStreamReader(client.getInputStream());
             outputStream = new OutputStreamWriter(client.getOutputStream(), StandardCharsets.UTF_8);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-
-
+        //sending client/server name
         try {
             outputStream.write(game.name);
             outputStream.flush();
@@ -45,75 +41,54 @@ public class ClientProcess implements Serializable, Runnable {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        {
 
-            while (true) {
-                try {
-                    String name;
-                    char[] buffer = new char[1028];
-                    StringBuilder stringBuilder = new StringBuilder();
-
-                    if (inputStream.ready()) {
-                        int charsRead;
-                        try {
-
-                            while ((charsRead = inputStream.read(buffer)) > 0) {
-                                stringBuilder.append(buffer, 0, charsRead);
-                                System.out.println("reading");
-
-                                if (!inputStream.ready())
-                                    break;
-
-                            }
-                            name = stringBuilder.toString().trim();
-                            game.players.put(name, new Player(game, name));
-                            break;
-                        } catch (IOException e) {
-                            System.err.println("Could not read json data");
+        //reading client/server name
+        while (true) {
+            try {
+                String name;
+                char[] buffer = new char[1028];
+                StringBuilder stringBuilder = new StringBuilder();
+                if (inputStream.ready()) {
+                    int charsRead;
+                    try {
+                        while ((charsRead = inputStream.read(buffer)) > 0) {
+                            stringBuilder.append(buffer, 0, charsRead);
+                            if (!inputStream.ready())
+                                break;
+                            System.err.println("failed to read, trying again");
                         }
+                        name = stringBuilder.toString().trim();
+                        game.players.put(name, new Player(game, name));
+                        break;
+                    } catch (IOException e) {
+                        System.err.println("Could not read json data");
                     }
-                    System.out.println("Waiting for name data");
-
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
                 }
+                System.err.println("waiting for name");
 
+            } catch (IOException e) {
+                throw new RuntimeException(e);
             }
-
-//            while (true) {
-//                try {
-//                    System.out.println("stream is ready " + inputStream.ready());
-//                    if (inputStream.ready())
-//                        try {
-//                            BufferedReader bufferedReader = new BufferedReader(inputStream);
-//                            System.out.println("new reder");
-//                            String name = null;
-//                            if (bufferedReader.ready())
-//                                name = bufferedReader.readLine();
-//
-//                            if (name != null) {
-//                                System.err.println(name);
-//                                game.players.put(name, new Player(game, name));
-//                                break;
-//                            }
-//                        } catch (IOException e) {
-//                            System.err.println("Error getting client name. ErrorMessage: " + e.getMessage());
-//                        }
-//                    System.out.println("Waiting for name data");
-//                } catch (IOException e) {
-//                    throw new RuntimeException(e);
-//                }
-//            }
-
         }
-
     }
 
     public JSONArray writeJson() {
         JSONArray playerJson = new JSONArray();
         game.players.forEach((key, player) -> {
-            playerJson.put(key);
-            playerJson.put(player.getX() + "," + player.getY());
+            JSONObject playerData = new JSONObject();
+            playerData.put("name", key);
+            playerData.put("coords", player.getX() + "," + player.getY());
+            JSONArray bulletData = new JSONArray();
+            for (Bullet bullet : game.bullets.get(game.name)) {
+                JSONObject bulletJson = new JSONObject();
+                JSONObject bulletCoordinates = new JSONObject();
+                String bulletCoordsKey = bullet.x + "," + bullet.y;
+                double bulletRadians = bullet.radians;
+                bulletJson.put("coords", bulletCoordsKey);
+                bulletJson.put("radians", bulletRadians);
+            }
+            playerData.put("bullets", bulletData);
+            playerJson.put(playerData);
         });
         return playerJson;
     }
@@ -121,7 +96,6 @@ public class ClientProcess implements Serializable, Runnable {
     public void sendData() throws IOException {
 
         jsonPackage.put("players", writeJson());
-        System.out.println(jsonPackage);
         outputStream.write(jsonPackage.toString());
         outputStream.flush();
     }
@@ -138,7 +112,7 @@ public class ClientProcess implements Serializable, Runnable {
                     if (stringBuilder.toString().endsWith("}")) {
                         break;
                     }
-                    System.out.println("reading");
+                    System.err.println("reading failed, trying again");
                 }
                 String jsonData = stringBuilder.toString();
 
@@ -157,12 +131,13 @@ public class ClientProcess implements Serializable, Runnable {
     @Override
     public void run() {
         try {
+            client.setSoTimeout(1000 / 16 + 1);
             while (!client.isClosed()) {
                 try {
                     sendData();
                     receiveData();
                 } catch (IOException e) {
-                    throw new RuntimeException(e);
+                    System.err.println("Failed to send or retrieve data in " + this);
                 } finally {
                     addInstanceToServerQueue(jsonPackage);
                     if (game.serverQueue.size() >= 100) {
@@ -171,9 +146,11 @@ public class ClientProcess implements Serializable, Runnable {
                     }
                     System.out.println("ServerQueue size: " + game.serverQueue.size());
                 }
-                client.setSoTimeout(1000 / 16);
+                Thread.sleep(1000 / 16 - 1);
             }
         } catch (SocketException e) {
+            throw new RuntimeException(e);
+        } catch (InterruptedException e) {
             throw new RuntimeException(e);
         } finally {
             cleanupConnection();
@@ -182,7 +159,9 @@ public class ClientProcess implements Serializable, Runnable {
     }
 
     public void addInstanceToServerQueue(JSONObject request) {
-        game.serverQueue.add(request);
+        if (game.serverQueue.size() < 100)
+            game.serverQueue.add(request);
+        else System.err.println("too big server queue size");
     }
 
     public void cleanupConnection() {

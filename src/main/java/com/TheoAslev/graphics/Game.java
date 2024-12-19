@@ -37,7 +37,7 @@ public class Game extends JPanel implements Runnable {
     KeyControls keyControls;
     MouseControls mouseControls;
     Point mouseLocation;
-    ArrayList<Bullet> bullets = new ArrayList<>();
+    public HashMap<String, ArrayList<Bullet>> bullets = new HashMap<>();
     public HashMap<String, Player> players = new HashMap<>();
 
     public Game(int screenWidth, int screenHeight, boolean isHosting, String name) {
@@ -103,7 +103,7 @@ public class Game extends JPanel implements Runnable {
             if (playerData.length() % 2 != 0) throw new RuntimeException();
             for (int i = 0; i < playerData.length(); i += 2) {
                 String name = playerData.get(i).toString();
-                if (name != this.name) {
+                if (!Objects.equals(name, this.name)) {
                     String[] cords = playerData.getString(i + 1).split(",");
                     int x = Integer.parseInt(cords[0]);
                     int y = Integer.parseInt(cords[1]);
@@ -112,14 +112,14 @@ public class Game extends JPanel implements Runnable {
                         players.get(name).setY(y);
                     } else
                         players.put(name, new Player(this, name));
+
                 }
             }
         } else throw new RuntimeException();
     }
 
     public void update() {
-        if (threadRunTime % 2 == 0)
-            serverUpdate();
+        serverUpdate();
         //updates the character location upon movement
         Player player = players.get(name);
         player.fall();
@@ -138,13 +138,20 @@ public class Game extends JPanel implements Runnable {
             player.jump();
         }
         //Player shoots
-        if (mouseControls.inWindow)
-            for (int i = 0; i < bullets.size(); i++) {
-                bullets.get(i).move(threadRunTime);
-                if (bullets.get(i).x <= 0 || bullets.get(i).y <= 0 || bullets.get(i).x >= Main.SCREEN_WIDTH || bullets.get(i).y >= Main.SCREEN_HEIGHT) {
-                    bullets.remove(bullets.get(i));
-                }
+        if (mouseControls.inWindow) {
+            if (mouseControls.shoot) {
+                int dx = mouseLocation.x - player.getX();
+                int dy = mouseLocation.y - player.getY();
+                bullets.get(name).add(player.shoot(Math.toDegrees(Math.atan2(dy, dx))));
+                mouseControls.shoot = false;
             }
+        }
+        for (int i = 0; i < bullets.get(name).size(); i++) {
+            bullets.get(name).get(i).move(threadRunTime);
+            if (bullets.get(name).get(i).x <= 0 || bullets.get(name).get(i).y <= 0 || bullets.get(name).get(i).x >= Main.SCREEN_WIDTH || bullets.get(name).get(i).y >= Main.SCREEN_HEIGHT) {
+                bullets.get(name).remove(bullets.get(name).get(i));
+            }
+        }
         if (threadRunTime % 400 == 0) {
             System.out.println(players.toString());
             System.out.println(players.size());
@@ -170,9 +177,12 @@ public class Game extends JPanel implements Runnable {
             players.forEach((key, player) -> {
                 player.renderPlayer(g2d);
             });
-        for (int i = 0; i < bullets.size(); i++) {
-            bullets.get(i).render(g2d);
-        }
+        bullets.forEach((key, bullets) -> {
+            bullets.forEach((bullet) -> {
+                bullet.render(g2d);
+            });
+        });
+
     }
 
     @Override

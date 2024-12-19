@@ -13,7 +13,6 @@ import java.util.ArrayList;
 public class Server implements Runnable {
     ServerSocket serverSocket;
     Game game;
-    public ArrayList<ClientProcess> clients;
 
     public Server(Game game) {
         this.game = game;
