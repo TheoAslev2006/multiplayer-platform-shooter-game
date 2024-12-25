@@ -13,9 +13,9 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 
 public class Client implements Serializable {
-    public Client(Game game) {
+    public Client(Game game, String ip) {
         try {
-            Socket socket = new Socket("127.0.0.1", 5564);
+            Socket socket = new Socket(ip, 5564);
             new Thread(new ClientProcess(socket, game)).start();
         } catch (IOException e) {
             System.out.println("no connection found");

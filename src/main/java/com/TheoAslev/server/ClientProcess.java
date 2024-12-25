@@ -3,16 +3,13 @@ package com.TheoAslev.server;
 
 import com.TheoAslev.character.Player;
 import com.TheoAslev.graphics.Game;
-import com.TheoAslev.objects.Bullet;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import java.awt.event.WindowEvent;
 import java.io.*;
 import java.net.Socket;
 import java.net.SocketException;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
 
 
 public class ClientProcess implements Serializable, Runnable {
@@ -72,30 +69,29 @@ public class ClientProcess implements Serializable, Runnable {
         }
     }
 
-    public JSONArray writeJson() {
+    public JSONArray writePlayerJson() {
+        //writing all the json for players to send to server
         JSONArray playerJson = new JSONArray();
         game.players.forEach((key, player) -> {
             JSONObject playerData = new JSONObject();
             playerData.put("name", key);
             playerData.put("coords", player.getX() + "," + player.getY());
-            JSONArray bulletData = new JSONArray();
-            for (Bullet bullet : game.bullets.get(game.name)) {
-                JSONObject bulletJson = new JSONObject();
-                JSONObject bulletCoordinates = new JSONObject();
-                String bulletCoordsKey = bullet.x + "," + bullet.y;
-                double bulletRadians = bullet.radians;
-                bulletJson.put("coords", bulletCoordsKey);
-                bulletJson.put("radians", bulletRadians);
+            JSONArray bulletJson = new JSONArray();
+            int length = game.bulletsToServer.size();
+            for (int i = 0; i < length; i++) {
+                String bulletData = game.bulletsToServer.poll();
+                bulletJson.put(bulletData);
             }
-            playerData.put("bullets", bulletData);
+            System.err.println(bulletJson.length() + " bullets");
+            playerData.put("bullets", bulletJson);
             playerJson.put(playerData);
         });
         return playerJson;
+
     }
 
     public void sendData() throws IOException {
-
-        jsonPackage.put("players", writeJson());
+        jsonPackage.put("players", writePlayerJson());
         outputStream.write(jsonPackage.toString());
         outputStream.flush();
     }
@@ -103,7 +99,6 @@ public class ClientProcess implements Serializable, Runnable {
     public void receiveData() throws IOException {
         char[] buffer = new char[1024];
         StringBuilder stringBuilder = new StringBuilder();
-
         if (inputStream.ready())
             try {
                 int charsRead;
@@ -112,10 +107,9 @@ public class ClientProcess implements Serializable, Runnable {
                     if (stringBuilder.toString().endsWith("}")) {
                         break;
                     }
-                    System.err.println("reading failed, trying again");
+                    System.err.println("reading failed, trying again: " + stringBuilder);
                 }
                 String jsonData = stringBuilder.toString();
-
                 if (jsonData.isEmpty())
                     System.err.println("No data received");
                 else {
@@ -131,7 +125,7 @@ public class ClientProcess implements Serializable, Runnable {
     @Override
     public void run() {
         try {
-            client.setSoTimeout(1000 / 16 + 1);
+            client.setSoTimeout(1000 / 16);
             while (!client.isClosed()) {
                 try {
                     sendData();
@@ -146,7 +140,7 @@ public class ClientProcess implements Serializable, Runnable {
                     }
                     System.out.println("ServerQueue size: " + game.serverQueue.size());
                 }
-                Thread.sleep(1000 / 16 - 1);
+                Thread.sleep(1000 / 30);
             }
         } catch (SocketException e) {
             throw new RuntimeException(e);

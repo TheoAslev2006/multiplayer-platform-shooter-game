@@ -13,11 +13,13 @@ public class Player extends Character implements Controls, Serializable {
     boolean movingRight = false;
     boolean movingLeft = false;
     boolean onGround = false;
-    String name = "You";
+    String name;
     final int startJumpVelocity = -5;
     HashMap<String, Tile> tileMap;
+    Game game;
 
     public Player(Game game, String name) {
+        this.game = game;
         this.name = name;
         this.tileMap = game.level.tileMap;
         x = 200;
@@ -47,12 +49,14 @@ public class Player extends Character implements Controls, Serializable {
 
     @Override
     public Bullet shoot(double radians) {
-        radians = Math.toRadians(radians);
         if (radians <= 0)
             radians += Math.toRadians(360);
+        else if (radians <= Math.PI * 2)
+            radians -= Math.toRadians(360);
         System.out.println(radians);
         System.out.println("speed: " + Math.cos(radians) * 10 + " " + Math.sin(radians) * 10);
-        return new Bullet(Math.cos(radians) * 100, Math.sin(radians) * 100, Math.toDegrees(radians), new Point(x, y));
+        game.bulletsToServer.add(x + "," + y + "," + radians);
+        return new Bullet(Math.cos(radians) * 100, Math.sin(radians) * 100, radians, new Point(x, y));
 
     }
 

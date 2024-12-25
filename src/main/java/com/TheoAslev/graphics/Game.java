@@ -24,12 +24,10 @@ import java.util.*;
 public class Game extends JPanel implements Runnable {
     final int screenWidth;
     final int screenHeight;
-    public final boolean isHosting;
     int maxFps = (1000 / 60);
     int currentFrames;
     public long threadRunTime;
     public String name;
-    public Queue<JSONObject> serverQueue;
     Server server;
     Client client;
     Thread thread;
@@ -37,15 +35,17 @@ public class Game extends JPanel implements Runnable {
     KeyControls keyControls;
     MouseControls mouseControls;
     Point mouseLocation;
-    public HashMap<String, ArrayList<Bullet>> bullets = new HashMap<>();
+    public ArrayList<Bullet> bullets = new ArrayList<>();
+    public Queue<String> bulletsFromServer;
+    public Queue<String> bulletsToServer;
+    public Queue<JSONObject> serverQueue;
     public HashMap<String, Player> players = new HashMap<>();
 
-    public Game(int screenWidth, int screenHeight, boolean isHosting, String name) {
+    public Game(int screenWidth, int screenHeight, String name) {
         //initialization of JPanel
         this.name = name;
         this.screenWidth = screenWidth;
         this.screenHeight = screenHeight;
-        this.isHosting = isHosting;
         keyControls = new KeyControls();
         mouseControls = new MouseControls();
         setPreferredSize(new Dimension(screenWidth, screenHeight));
@@ -68,13 +68,47 @@ public class Game extends JPanel implements Runnable {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        if (isHosting) {
-            server = new Server(this);
-            System.out.println("server created");
-        } else {
-            client = new Client(this);
-        }
+
+        server = new Server(this);
+        System.out.println("server created");
+
         serverQueue = new LinkedList<>();
+        bulletsFromServer = new LinkedList<>();
+        bulletsToServer = new LinkedList<>();
+    }
+
+    public Game(int screenWidth, int screenHeight, String name, String ip) {
+        //initialization of JPanel
+        this.name = name;
+        this.screenWidth = screenWidth;
+        this.screenHeight = screenHeight;
+        keyControls = new KeyControls();
+        mouseControls = new MouseControls();
+        setPreferredSize(new Dimension(screenWidth, screenHeight));
+        setDoubleBuffered(true);
+        setOpaque(true);
+        setBackground(Color.white);
+        setFocusable(true);
+        addKeyListener(keyControls);
+        addMouseListener(mouseControls);
+        addMouseMotionListener(new MouseAdapter() {
+            @Override
+            public void mouseMoved(MouseEvent e) {
+                super.mouseMoved(e);
+                mouseLocation = e.getPoint();
+            }
+        });
+        try {
+            level = new Level(Levels.Level1);
+            players.put(name, new Player(this, name));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        client = new Client(this, ip);
+
+        serverQueue = new LinkedList<>();
+        bulletsFromServer = new LinkedList<>();
+        bulletsToServer = new LinkedList<>();
     }
 
     public void start() {
@@ -98,28 +132,45 @@ public class Game extends JPanel implements Runnable {
 
     public void parseJson(JSONObject jsonPackage) {
         if (jsonPackage.has("players")) {
-            JSONArray playerData = jsonPackage.getJSONArray("players");
-            System.out.println(jsonPackage);
-            if (playerData.length() % 2 != 0) throw new RuntimeException();
-            for (int i = 0; i < playerData.length(); i += 2) {
-                String name = playerData.get(i).toString();
+            JSONArray playerDataInstances = jsonPackage.getJSONArray("players");
+            for (int i = 0; i < playerDataInstances.length(); i++) {
+                JSONObject playerData = playerDataInstances.getJSONObject(i);
+                System.out.println(jsonPackage);
+                String name = playerData.getString("name");
+                String[] coords = playerData.getString("coords").split(",");
+                int[] parsedCoords = {Integer.parseInt(coords[0]), Integer.parseInt(coords[1])};
                 if (!Objects.equals(name, this.name)) {
-                    String[] cords = playerData.getString(i + 1).split(",");
-                    int x = Integer.parseInt(cords[0]);
-                    int y = Integer.parseInt(cords[1]);
-                    if (players.get(name) != null) {
-                        players.get(name).setX(x);
-                        players.get(name).setY(y);
-                    } else
-                        players.put(name, new Player(this, name));
+                    players.get(name).setX(parsedCoords[0]);
+                    players.get(name).setY(parsedCoords[1]);
+                }
 
+                JSONArray bullets = playerData.getJSONArray("bullets");
+                for (int j = 0; j < bullets.length(); j++) {
+                    bulletsFromServer.add(bullets.getString(j));
                 }
             }
+
         } else throw new RuntimeException();
+    }
+
+    public void addBullets() {
+        int length = bulletsFromServer.size();
+        for (int i = 0; i < length; i++) {
+            String bullet = bulletsFromServer.poll();
+            assert bullet != null : "Not a valid bullet";
+            String[] bulletDataArray = bullet.split(",");
+            assert bullet.length() != 3 : "Bullet missing data";
+            int[] parsedBulletDataArrayCoordinates = {
+                    Integer.parseInt(bulletDataArray[0]), Integer.parseInt(bulletDataArray[1]),
+            };
+            double radians = Double.parseDouble(bulletDataArray[2]);
+            bullets.add(new Bullet(Math.cos(radians) * 100, Math.sin(radians) * 100, radians, new Point(parsedBulletDataArrayCoordinates[0], parsedBulletDataArrayCoordinates[1])));
+        }
     }
 
     public void update() {
         serverUpdate();
+        addBullets();
         //updates the character location upon movement
         Player player = players.get(name);
         player.fall();
@@ -138,18 +189,18 @@ public class Game extends JPanel implements Runnable {
             player.jump();
         }
         //Player shoots
-        if (mouseControls.inWindow) {
-            if (mouseControls.shoot) {
-                int dx = mouseLocation.x - player.getX();
-                int dy = mouseLocation.y - player.getY();
-                bullets.get(name).add(player.shoot(Math.toDegrees(Math.atan2(dy, dx))));
-                mouseControls.shoot = false;
-            }
+
+        if (mouseControls.shoot) {
+            int dx = mouseLocation.x - player.getX();
+            int dy = mouseLocation.y - player.getY();
+            bullets.add(player.shoot(Math.atan2(dy, dx)));
+            mouseControls.shoot = false;
         }
-        for (int i = 0; i < bullets.get(name).size(); i++) {
-            bullets.get(name).get(i).move(threadRunTime);
-            if (bullets.get(name).get(i).x <= 0 || bullets.get(name).get(i).y <= 0 || bullets.get(name).get(i).x >= Main.SCREEN_WIDTH || bullets.get(name).get(i).y >= Main.SCREEN_HEIGHT) {
-                bullets.get(name).remove(bullets.get(name).get(i));
+
+        for (int i = 0; i < bullets.size(); i++) {
+            bullets.get(i).move(threadRunTime);
+            if (bullets.get(i).x <= 0 || bullets.get(i).y <= 0 || bullets.get(i).x >= Main.SCREEN_WIDTH || bullets.get(i).y >= Main.SCREEN_HEIGHT) {
+                bullets.remove(bullets.get(i));
             }
         }
         if (threadRunTime % 400 == 0) {
@@ -177,12 +228,9 @@ public class Game extends JPanel implements Runnable {
             players.forEach((key, player) -> {
                 player.renderPlayer(g2d);
             });
-        bullets.forEach((key, bullets) -> {
-            bullets.forEach((bullet) -> {
-                bullet.render(g2d);
-            });
+        bullets.forEach((bullet) -> {
+            bullet.render(g2d);
         });
-
     }
 
     @Override

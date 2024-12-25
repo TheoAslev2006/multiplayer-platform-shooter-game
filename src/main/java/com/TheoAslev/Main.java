@@ -17,28 +17,35 @@ public class Main {
     public static int SCREEN_WIDTH = 1280;
     public static int SCREEN_HEIGHT = 960;
 
-    public Main(boolean isHosting){
+    public Main() {
+
         System.out.println("Starting...");
-        initGame(isHosting);
+        initGame();
     }
 
-    public void initStartScreen(){
+    public void initStartScreen() {
 
 
     }
 
-    public void initGame(boolean isHosting){
+    public void initGame() {
         Scanner scanner = new Scanner(System.in);
-        boolean mode = scanner.nextBoolean();
         String name;
-        if (mode)
+        Game game;
+        System.out.print("insert ip address to join or enter blank to host");
+        String ip = scanner.nextLine();
+        if (ip.isEmpty()) {
             name = "server";
-        else name = "client";
+            game = new Game(SCREEN_WIDTH, SCREEN_HEIGHT, name);
+        } else {
+            name = "client";
+            System.out.println("ip connected to");
+            game = new Game(SCREEN_WIDTH, SCREEN_HEIGHT, name, ip);
+        }
         JFrame frame = new JFrame(TITLE);
-        Game game = new Game(SCREEN_WIDTH, SCREEN_HEIGHT, mode, name);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         //saves data on windows close
-        frame.addWindowListener(new WindowAdapter(){
+        frame.addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
                 //TODO add serialization to closing event
@@ -57,7 +64,6 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        new Main(true);
-        new Main(false);
+        new Main();
     }
 }
