@@ -36,9 +36,10 @@ public class Level {
         }
 
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-        //each pixel is read and converted into a colour from the buffered image
+        //each pixel is read and converted into a texture from the buffered image which behaves as a model for the map
         for (int y = 0; y < 30; y++) {
             for (int x = 0; x < 40; x++) {
+                //picks out a specific colour based on bit location of the colour
                 int pixelColour = bufferedImage.getRGB(x, y);
                 int red = (pixelColour >> 16) & 0xFF;
                 int green = (pixelColour >> 8) & 0xFF;
@@ -60,6 +61,7 @@ public class Level {
     }
 
     public void render(Graphics2D g2d) {
+        //renders the tiles to the screen
         for (int y = 0; y < 30; y++) {
             for (int x = 0; x < 40; x++) {
                 String tileKey = x + "," + y;

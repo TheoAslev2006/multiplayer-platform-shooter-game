@@ -11,10 +11,11 @@ public class MouseControls implements MouseListener {
     int monitorWidth = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDisplayMode().getWidth();
     int monitorHeight = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDisplayMode().getHeight();
     public boolean inWindow = (
-            (MouseInfo.getPointerInfo().getLocation().x <= (monitorWidth/ 2 + Main.SCREEN_WIDTH / 2)
-            && MouseInfo.getPointerInfo().getLocation().x >= (monitorWidth / 2 - Main.SCREEN_WIDTH / 2))
-            &&(MouseInfo.getPointerInfo().getLocation().y <= (monitorHeight/ 2 + Main.SCREEN_HEIGHT / 2)
-            && MouseInfo.getPointerInfo().getLocation().y >= (monitorHeight / 2 - Main.SCREEN_HEIGHT / 2)) );
+            (MouseInfo.getPointerInfo().getLocation().x <= (monitorWidth / 2 + Main.SCREEN_WIDTH / 2)
+                    && MouseInfo.getPointerInfo().getLocation().x >= (monitorWidth / 2 - Main.SCREEN_WIDTH / 2))
+                    && (MouseInfo.getPointerInfo().getLocation().y <= (monitorHeight / 2 + Main.SCREEN_HEIGHT / 2)
+                    && MouseInfo.getPointerInfo().getLocation().y >= (monitorHeight / 2 - Main.SCREEN_HEIGHT / 2)));
+
     @Override
     public void mouseClicked(MouseEvent e) {
 
@@ -31,6 +32,8 @@ public class MouseControls implements MouseListener {
     public void mouseReleased(MouseEvent e) {
 
     }
+
+    //checks if mouse is inside of window
 
     @Override
     public void mouseEntered(MouseEvent e) {

@@ -1,11 +1,8 @@
 package com.TheoAslev.server;
 
-import com.TheoAslev.character.Player;
 import com.TheoAslev.graphics.Game;
 
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -15,6 +12,7 @@ public class Server implements Runnable {
     Game game;
 
     public Server(Game game) {
+        //initializes a new server socket for the server to connect to sockets with
         this.game = game;
         try {
             serverSocket = new ServerSocket(5564);
@@ -26,6 +24,7 @@ public class Server implements Runnable {
 
     @Override
     public void run() {
+        //searches after new clients to bond to with the client process
         while (true) {
             Socket client = null;
             try {
@@ -35,7 +34,7 @@ public class Server implements Runnable {
                 continue;
             }
             System.out.println("Client has been accepted");
-            new Thread(new ClientProcess(client, game)).start();
+            new Thread(new ClientProcess(client, this)).start();
         }
     }
 }

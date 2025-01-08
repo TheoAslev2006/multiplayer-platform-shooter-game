@@ -1,5 +1,6 @@
 package com.TheoAslev.objects;
 
+import com.TheoAslev.graphics.Game;
 import com.TheoAslev.utils.FileReader;
 
 import java.awt.*;
@@ -13,8 +14,8 @@ public class Bullet {
     public int y;
     int rectX;
     int rectY;
-    final double velY;
-    final double velX;
+    public final double velY;
+    public final double velX;
     public final double radians;
     final boolean localBullet;
     String filepath = "src\\main\\resources\\textures\\objects\\bullet.png";
@@ -31,6 +32,7 @@ public class Bullet {
         y = (int) (orgin.y + Math.sin(radians) * 30);
         rectX = x;
         rectY = y;
+        //rotates the bullet texture with a bi-linear transformation
         affineTransform = AffineTransform.getRotateInstance(radians, 13, 13);
         affineTransformOp = new AffineTransformOp(affineTransform, AffineTransformOp.TYPE_BILINEAR);
         try {
@@ -41,28 +43,15 @@ public class Bullet {
         localBullet = true;
     }
 
-    public Bullet(int x, int y, double radians) {
-        //initiates the non-local bullet fetched from the server and calculates the rotation;
-
-        velX = Math.cos(radians) * 100;
-        velY = Math.sin(radians) * 100;
-        this.radians = radians;
-
-        affineTransform = AffineTransform.getRotateInstance(radians, 13, 13);
-        affineTransformOp = new AffineTransformOp(affineTransform, AffineTransformOp.TYPE_BILINEAR);
-        try {
-            bufferedImage = FileReader.loadFile(filepath);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        localBullet = false;
-    }
-
-    public void render(Graphics2D g2d) {
+    public void render(Graphics2D g2d, boolean showHitBox) {
         //renders bullet and square for viewing bullet angle
         g2d.drawImage(affineTransformOp.filter(bufferedImage, null), x + 3, y, null);
         if (localBullet)
             g2d.drawRect(rectX + 11, rectY + 10, 10, 10);
+        if (showHitBox) {
+            g2d.setColor(Color.BLACK);
+            g2d.drawRect(x, y, 32, 32);
+        }
     }
 
     public void move(long runtime) {

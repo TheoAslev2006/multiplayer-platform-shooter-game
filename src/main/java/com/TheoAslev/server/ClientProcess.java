@@ -19,31 +19,32 @@ public class ClientProcess implements Serializable, Runnable {
     OutputStreamWriter outputStream;
     public JSONObject jsonPackage;
 
-    public ClientProcess(Socket client, Game game) {
+    //server constructor
+    public ClientProcess(Socket client, Server server) {
         jsonPackage = new JSONObject();
         this.client = client;
-        this.game = game;
-        //stream initialization
+        this.game = server.game;
+        //IO stream initialization
         try {
             inputStream = new InputStreamReader(client.getInputStream());
             outputStream = new OutputStreamWriter(client.getOutputStream(), StandardCharsets.UTF_8);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        //sending client/server name
+
+        //sending server name
         try {
             outputStream.write(game.name);
             outputStream.flush();
-            System.out.println("sent name");
+            System.out.println("sent name list");
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-
-        //reading client/server name
+        //reading client name
         while (true) {
             try {
                 String name;
-                char[] buffer = new char[1028];
+                char[] buffer = new char[1024];
                 StringBuilder stringBuilder = new StringBuilder();
                 if (inputStream.ready()) {
                     int charsRead;
@@ -58,14 +59,61 @@ public class ClientProcess implements Serializable, Runnable {
                         game.players.put(name, new Player(game, name));
                         break;
                     } catch (IOException e) {
-                        System.err.println("Could not read json data");
+                        System.err.println("Could not read name");
                     }
                 }
-                System.err.println("waiting for name");
-
             } catch (IOException e) {
-                throw new RuntimeException(e);
+                System.err.println("Error retrieving name from client, trying again");
             }
+        }
+    }
+
+    // client constructor
+    public ClientProcess(Socket client, Game game) {
+        jsonPackage = new JSONObject();
+        this.client = client;
+        this.game = game;
+        //stream initialization
+        try {
+            inputStream = new InputStreamReader(client.getInputStream());
+            outputStream = new OutputStreamWriter(client.getOutputStream(), StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        //sending client name
+        try {
+            outputStream.write(game.name);
+            outputStream.flush();
+            System.out.println("sent name");
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        //reading server name
+        while (true) {
+            try {
+                String name;
+                char[] buffer = new char[1024];
+                StringBuilder stringBuilder = new StringBuilder();
+                if (inputStream.ready()) {
+                    int charsRead;
+                    try {
+                        while ((charsRead = inputStream.read(buffer)) > 0) {
+                            stringBuilder.append(buffer, 0, charsRead);
+                            if (!inputStream.ready())
+                                break;
+                            System.err.println("failed to read, trying again");
+                        }
+                        name = stringBuilder.toString().trim();
+                        game.players.put(name, new Player(game, name));
+                        break;
+                    } catch (IOException e) {
+                        System.err.println("Could not read name");
+                    }
+                }
+            } catch (IOException e) {
+                System.err.println("Error retrieving name from server, trying again");
+            }
+            System.err.println("reading");
         }
     }
 
@@ -82,7 +130,6 @@ public class ClientProcess implements Serializable, Runnable {
                 String bulletData = game.bulletsToServer.poll();
                 bulletJson.put(bulletData);
             }
-            System.err.println(bulletJson.length() + " bullets");
             playerData.put("bullets", bulletJson);
             playerJson.put(playerData);
         });
@@ -91,12 +138,14 @@ public class ClientProcess implements Serializable, Runnable {
     }
 
     public void sendData() throws IOException {
+        //sends data to socket/server-socket with the help of an output stream
         jsonPackage.put("players", writePlayerJson());
         outputStream.write(jsonPackage.toString());
         outputStream.flush();
     }
 
     public void receiveData() throws IOException {
+        //receives data with the help of an input stream, string builder to assemble the json, and a buffer to save memory when using the string builder
         char[] buffer = new char[1024];
         StringBuilder stringBuilder = new StringBuilder();
         if (inputStream.ready())
@@ -124,6 +173,7 @@ public class ClientProcess implements Serializable, Runnable {
 
     @Override
     public void run() {
+        //loop where client/server sends and receives player data to the server/client that gets added to a queue in the game loop
         try {
             client.setSoTimeout(1000 / 16);
             while (!client.isClosed()) {
@@ -131,46 +181,53 @@ public class ClientProcess implements Serializable, Runnable {
                     sendData();
                     receiveData();
                 } catch (IOException e) {
-                    System.err.println("Failed to send or retrieve data in " + this);
+                    System.err.println("Connection lost with server");
+                    System.err.println("Cleaning upp lost connection");
+                    cleanupConnection();
                 } finally {
-                    addInstanceToServerQueue(jsonPackage);
-                    if (game.serverQueue.size() >= 100) {
-                        game.serverQueue.poll();
-                        System.out.println("game queue out of bounds");
+                    try {
+                        addInstanceToServerQueue(jsonPackage);
+                    } catch (ServerQueueOutOfBounds e) {
+                        System.out.println(e.getMessage());
                     }
-                    System.out.println("ServerQueue size: " + game.serverQueue.size());
                 }
                 Thread.sleep(1000 / 30);
             }
         } catch (SocketException e) {
-            throw new RuntimeException(e);
+            System.err.println("Socket error, cleaning up...");
+            cleanupConnection();
         } catch (InterruptedException e) {
-            throw new RuntimeException(e);
+            System.err.println("Thread interrupted, cleaning up...");
         } finally {
+            System.out.println("Cleaning up...");
             cleanupConnection();
         }
 
     }
 
-    public void addInstanceToServerQueue(JSONObject request) {
-        if (game.serverQueue.size() < 100)
+    public void addInstanceToServerQueue(JSONObject request) throws ServerQueueOutOfBounds {
+        //adds json that will get parsed in game class to a queue
+        if (game.serverQueue.size() < 10)
             game.serverQueue.add(request);
-        else System.err.println("too big server queue size");
+        else throw new ServerQueueOutOfBounds("ServerQueue out of bounds with size: " + game.serverQueue.size());
     }
 
     public void cleanupConnection() {
-        try {
-            if (inputStream != null)
-                inputStream.close();
-            if (outputStream != null)
-                outputStream.close();
-            if (!client.isClosed()) {
-                client.close();
+        //shuts everything down in the socket connection
+        while (true) {
+            try {
+                if (inputStream != null)
+                    inputStream.close();
+                if (outputStream != null)
+                    outputStream.close();
+                if (!client.isClosed()) {
+                    client.close();
+                }
+                System.out.println("Disconnected");
+                break;
+            } catch (IOException e) {
+                System.out.println("Error Closing server Connection, trying again");
             }
-            System.out.println("Disconnected");
-        } catch (IOException e) {
-            System.out.println("Error Closing server Connection");
-            throw new RuntimeException(e);
         }
     }
 }

@@ -8,7 +8,6 @@ import com.TheoAslev.level.Level;
 import com.TheoAslev.level.Levels;
 import com.TheoAslev.objects.Bullet;
 import com.TheoAslev.server.Client;
-import com.TheoAslev.server.ClientProcess;
 import com.TheoAslev.server.Server;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -18,31 +17,32 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
-import java.net.Socket;
 import java.util.*;
 
 public class Game extends JPanel implements Runnable {
-    final int screenWidth;
-    final int screenHeight;
+    public final int screenWidth;
+    public final int screenHeight;
     int maxFps = (1000 / 60);
     int currentFrames;
-    public long threadRunTime;
+    public long ticks;
     public String name;
-    Server server;
-    Client client;
+    public Server server;
+    public Client client;
     Thread thread;
     public Level level;
     KeyControls keyControls;
     MouseControls mouseControls;
     Point mouseLocation;
-    public ArrayList<Bullet> bullets = new ArrayList<>();
+    public ArrayList<Bullet> bullets;
+    public ArrayList<Bullet> enemyBullets;
     public Queue<String> bulletsFromServer;
     public Queue<String> bulletsToServer;
     public Queue<JSONObject> serverQueue;
     public HashMap<String, Player> players = new HashMap<>();
+    public boolean showHitBoxes = true;
 
     public Game(int screenWidth, int screenHeight, String name) {
-        //initialization of JPanel
+        //initialization of JPanel and event listeners
         this.name = name;
         this.screenWidth = screenWidth;
         this.screenHeight = screenHeight;
@@ -68,10 +68,11 @@ public class Game extends JPanel implements Runnable {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-
+        //initializes queues, arraylists and the server
         server = new Server(this);
         System.out.println("server created");
-
+        bullets = new ArrayList<>();
+        enemyBullets = new ArrayList<>();
         serverQueue = new LinkedList<>();
         bulletsFromServer = new LinkedList<>();
         bulletsToServer = new LinkedList<>();
@@ -105,7 +106,8 @@ public class Game extends JPanel implements Runnable {
             throw new RuntimeException(e);
         }
         client = new Client(this, ip);
-
+        bullets = new ArrayList<>();
+        enemyBullets = new ArrayList<>();
         serverQueue = new LinkedList<>();
         bulletsFromServer = new LinkedList<>();
         bulletsToServer = new LinkedList<>();
@@ -131,11 +133,12 @@ public class Game extends JPanel implements Runnable {
     }
 
     public void parseJson(JSONObject jsonPackage) {
+        //takes json from a queue and uses it to give data on other players
         if (jsonPackage.has("players")) {
             JSONArray playerDataInstances = jsonPackage.getJSONArray("players");
             for (int i = 0; i < playerDataInstances.length(); i++) {
+                //calculates the coordinates from said player
                 JSONObject playerData = playerDataInstances.getJSONObject(i);
-                System.out.println(jsonPackage);
                 String name = playerData.getString("name");
                 String[] coords = playerData.getString("coords").split(",");
                 int[] parsedCoords = {Integer.parseInt(coords[0]), Integer.parseInt(coords[1])};
@@ -143,7 +146,7 @@ public class Game extends JPanel implements Runnable {
                     players.get(name).setX(parsedCoords[0]);
                     players.get(name).setY(parsedCoords[1]);
                 }
-
+                //adds new bullets to game from server queue
                 JSONArray bullets = playerData.getJSONArray("bullets");
                 for (int j = 0; j < bullets.length(); j++) {
                     bulletsFromServer.add(bullets.getString(j));
@@ -154,6 +157,7 @@ public class Game extends JPanel implements Runnable {
     }
 
     public void addBullets() {
+        // adds bullets to separate arraylist from the queue
         int length = bulletsFromServer.size();
         for (int i = 0; i < length; i++) {
             String bullet = bulletsFromServer.poll();
@@ -164,32 +168,39 @@ public class Game extends JPanel implements Runnable {
                     Integer.parseInt(bulletDataArray[0]), Integer.parseInt(bulletDataArray[1]),
             };
             double radians = Double.parseDouble(bulletDataArray[2]);
-            bullets.add(new Bullet(Math.cos(radians) * 100, Math.sin(radians) * 100, radians, new Point(parsedBulletDataArrayCoordinates[0], parsedBulletDataArrayCoordinates[1])));
+            enemyBullets.add(new Bullet(Math.cos(radians) * 100, Math.sin(radians) * 100, radians, new Point(parsedBulletDataArrayCoordinates[0], parsedBulletDataArrayCoordinates[1])));
         }
     }
 
     public void update() {
+        showHitBoxes = keyControls.isHitBoxesVisible;
+
+        //server related updates
         serverUpdate();
         addBullets();
+
         //updates the character location upon movement
         Player player = players.get(name);
-        player.fall();
-        player.tick(threadRunTime);
+        player.calculatePlayerPosition();
+        player.tick(ticks);
         player.updatePlayer();
+
         //Player walks left
         if (keyControls.left) {
-            player.moveLeft(3);
+            player.moveLeft(2);
         }
+
         //Player walks right
         if (keyControls.right) {
-            player.moveRight(3);
+            player.moveRight(2);
         }
+
         //Player Jumps
         if (keyControls.jump) {
             player.jump();
         }
-        //Player shoots
 
+        //Player shoots
         if (mouseControls.shoot) {
             int dx = mouseLocation.x - player.getX();
             int dy = mouseLocation.y - player.getY();
@@ -197,16 +208,29 @@ public class Game extends JPanel implements Runnable {
             mouseControls.shoot = false;
         }
 
+        //updates both enemy and player bullets position/status
         for (int i = 0; i < bullets.size(); i++) {
-            bullets.get(i).move(threadRunTime);
+            bullets.get(i).move(ticks);
             if (bullets.get(i).x <= 0 || bullets.get(i).y <= 0 || bullets.get(i).x >= Main.SCREEN_WIDTH || bullets.get(i).y >= Main.SCREEN_HEIGHT) {
                 bullets.remove(bullets.get(i));
             }
         }
-        if (threadRunTime % 400 == 0) {
-            System.out.println(players.toString());
-            System.out.println(players.size());
-            System.out.println(serverQueue.size());
+        for (int i = 0; i < enemyBullets.size(); i++) {
+            enemyBullets.get(i).move(ticks);
+            if (enemyBullets.get(i).x <= 0 || enemyBullets.get(i).y <= 0 || enemyBullets.get(i).x >= Main.SCREEN_WIDTH || enemyBullets.get(i).y >= Main.SCREEN_HEIGHT) {
+                enemyBullets.remove(enemyBullets.get(i));
+            }
+        }
+
+        //checks collision
+        if (player.checkForCollision(enemyBullets)) {
+            player.die();
+        }
+
+        //prints out the status of the game once in a while
+        if (ticks % 900 == 0) {
+            System.out.println("Player size: " + players.size());
+            System.out.println("Server queue size: " + serverQueue.size());
         }
     }
 
@@ -229,7 +253,10 @@ public class Game extends JPanel implements Runnable {
                 player.renderPlayer(g2d);
             });
         bullets.forEach((bullet) -> {
-            bullet.render(g2d);
+            bullet.render(g2d, showHitBoxes);
+        });
+        enemyBullets.forEach((bullet) -> {
+            bullet.render(g2d, showHitBoxes);
         });
     }
 
@@ -254,10 +281,9 @@ public class Game extends JPanel implements Runnable {
 
             }
             update();
-            //System.out.println("updated");
             repaint();
             frames++;
-            threadRunTime += 1;
+            ticks += 1;
             if (System.currentTimeMillis() - fpsTimer >= 1000) {
                 currentFrames = frames;
                 frames = 0;

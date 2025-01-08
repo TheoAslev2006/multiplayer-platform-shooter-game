@@ -3,7 +3,7 @@ package com.TheoAslev.level;
 import java.util.HashMap;
 import java.util.Map;
 
-public enum TileTexture{
+public enum TileTexture {
     SOLID_STONE_BLOCK(0),
     SOLID_GRASS_BLOCK(1),
     PLATFORM_STONE_BLOCK(2),
@@ -11,12 +11,13 @@ public enum TileTexture{
     GHOST_TRANSPARENT(4);
 
     private int value;
-    private static Map<Integer,TileTexture> textureMap = new HashMap<>();
+    private static Map<Integer, TileTexture> textureMap = new HashMap<>();
 
-    private TileTexture(int value){
+    private TileTexture(int value) {
         this.value = value;
     }
 
+    //initializes the enumeration into a map
     static {
         for (TileTexture texture : TileTexture.values()) {
             textureMap.put(texture.ordinal(), texture);
