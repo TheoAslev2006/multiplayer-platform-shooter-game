@@ -6,10 +6,9 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.logging.*;
 
+//responsible for loading a level based on an image model with specific colours that dictate where the specific block is going to be drawn;
 public class Level {
     Levels levels;
     String[] filePaths = {"src\\main\\resources\\model\\level\\map.png", "", ""};
@@ -17,7 +16,6 @@ public class Level {
     BufferedImage texture;
     public HashMap<String, Tile> tileMap = new HashMap<>();
     byte[] bytes;
-    int textureScale = 4;
 
     public Level(Levels levels) throws IOException {
         bytes = new byte[30 * 40];

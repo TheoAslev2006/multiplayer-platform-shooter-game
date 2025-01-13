@@ -1,6 +1,4 @@
-package com.TheoAslev.character;
-
-import com.TheoAslev.objects.Bullet;
+package com.TheoAslev.entity;
 
 public interface Controls {
     public void moveRight(double speed);
@@ -14,4 +12,6 @@ public interface Controls {
     public void die();
 
     public void calculatePlayerPosition();
+
+    public void moveDown();
 }

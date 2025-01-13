@@ -1,12 +1,12 @@
 package com.TheoAslev.graphics;
 
-import com.TheoAslev.character.Player;
+import com.TheoAslev.entity.Player;
 import com.TheoAslev.Main;
 import com.TheoAslev.eventListeners.KeyControls;
 import com.TheoAslev.eventListeners.MouseControls;
 import com.TheoAslev.level.Level;
 import com.TheoAslev.level.Levels;
-import com.TheoAslev.objects.Bullet;
+import com.TheoAslev.entity.Bullet;
 import com.TheoAslev.server.Client;
 import com.TheoAslev.server.Server;
 import org.json.JSONArray;
@@ -19,6 +19,8 @@ import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.util.*;
 
+
+//Game class is responsible for the whole game-loop and initialization of player class and server
 public class Game extends JPanel implements Runnable {
     public final int screenWidth;
     public final int screenHeight;
@@ -41,7 +43,7 @@ public class Game extends JPanel implements Runnable {
     public HashMap<String, Player> players = new HashMap<>();
     public boolean showHitBoxes = true;
 
-    public Game(int screenWidth, int screenHeight, String name) {
+    public Game(int screenWidth, int screenHeight, String name) throws Exception {
         //initialization of JPanel and event listeners
         this.name = name;
         this.screenWidth = screenWidth;
@@ -62,11 +64,12 @@ public class Game extends JPanel implements Runnable {
                 mouseLocation = e.getPoint();
             }
         });
+        //initializes the level and player
         try {
             level = new Level(Levels.Level1);
             players.put(name, new Player(this, name));
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new Exception();
         }
         //initializes queues, arraylists and the server
         server = new Server(this);
@@ -78,7 +81,7 @@ public class Game extends JPanel implements Runnable {
         bulletsToServer = new LinkedList<>();
     }
 
-    public Game(int screenWidth, int screenHeight, String name, String ip) {
+    public Game(int screenWidth, int screenHeight, String name, String ip) throws Exception {
         //initialization of JPanel
         this.name = name;
         this.screenWidth = screenWidth;
@@ -200,6 +203,10 @@ public class Game extends JPanel implements Runnable {
             player.jump();
         }
 
+        if (keyControls.down) {
+            player.moveDown();
+        }
+
         //Player shoots
         if (mouseControls.shoot) {
             int dx = mouseLocation.x - player.getX();
@@ -224,7 +231,10 @@ public class Game extends JPanel implements Runnable {
 
         //checks collision
         if (player.checkForCollision(enemyBullets)) {
-            player.die();
+            player.health -= 20;
+            if (player.health <= 0) {
+                player.die();
+            }
         }
 
         //prints out the status of the game once in a while
@@ -250,7 +260,7 @@ public class Game extends JPanel implements Runnable {
         level.render(g2d);
         if (!players.isEmpty())
             players.forEach((key, player) -> {
-                player.renderPlayer(g2d);
+                player.renderPlayer(g2d, Objects.equals(key, name));
             });
         bullets.forEach((bullet) -> {
             bullet.render(g2d, showHitBoxes);

@@ -1,20 +1,15 @@
 package com.TheoAslev.server;
 
 
-import com.TheoAslev.character.Player;
 import com.TheoAslev.graphics.Game;
 
 import java.io.IOException;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.io.Serializable;
 import java.net.Socket;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Scanner;
 
+//client side class that connects to server via a client process
 public class Client implements Serializable {
-    public Client(Game game, String ip) {
+    public Client(Game game, String ip) throws Exception {
         //initializes a client process from client perspective
         Socket socket;
         while (true)
@@ -22,15 +17,7 @@ public class Client implements Serializable {
                 socket = new Socket(ip, 5564);
                 break;
             } catch (IOException e) {
-                System.err.println("no connection found");
-                Scanner scanner = new Scanner(System.in);
-                try {
-                    Thread.sleep(20);
-                } catch (InterruptedException ex) {
-                    throw new RuntimeException(ex);
-                }
-                System.out.print("enter other ip ->");
-                ip = scanner.nextLine();
+                throw new Exception();
             }
         new Thread(new ClientProcess(socket, game)).start();
     }

@@ -1,0 +1,9 @@
+<component name="ArtifactManager">
+  <artifact type="jar" build-on-make="true" name="Plat_Form_Shooter_Game:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/Plat_Form_Shooter_Game_jar</output-path>
+    <root id="archive" name="Plat_Form_Shooter_Game.jar">
+      <element id="module-output" name="Plat_Form_Shooter_Game" />
+      <element id="extracted-dir" path="$MAVEN_REPOSITORY$/org/json/json/20231013/json-20231013.jar" path-in-jar="/" />
+    </root>
+  </artifact>
+</component>

@@ -3,6 +3,7 @@ package com.TheoAslev.level;
 import java.util.HashMap;
 import java.util.Map;
 
+//block type enumeration
 public enum TileTexture {
     SOLID_STONE_BLOCK(0),
     SOLID_GRASS_BLOCK(1),

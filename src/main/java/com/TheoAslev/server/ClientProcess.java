@@ -1,7 +1,7 @@
 package com.TheoAslev.server;
 
 
-import com.TheoAslev.character.Player;
+import com.TheoAslev.entity.Player;
 import com.TheoAslev.graphics.Game;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -11,9 +11,10 @@ import java.net.Socket;
 import java.net.SocketException;
 import java.nio.charset.StandardCharsets;
 
-
+//client process that connects server and client via a queue based system that hold information on other players position
 public class ClientProcess implements Serializable, Runnable {
     private Socket client;
+    public boolean isHosting;
     Game game;
     InputStreamReader inputStream;
     OutputStreamWriter outputStream;
@@ -21,6 +22,7 @@ public class ClientProcess implements Serializable, Runnable {
 
     //server constructor
     public ClientProcess(Socket client, Server server) {
+        isHosting = true;
         jsonPackage = new JSONObject();
         this.client = client;
         this.game = server.game;
@@ -36,7 +38,7 @@ public class ClientProcess implements Serializable, Runnable {
         try {
             outputStream.write(game.name);
             outputStream.flush();
-            System.out.println("sent name list");
+            System.out.println("Sent host name");
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -62,6 +64,8 @@ public class ClientProcess implements Serializable, Runnable {
                         System.err.println("Could not read name");
                     }
                 }
+                System.out.println("reading name.");
+
             } catch (IOException e) {
                 System.err.println("Error retrieving name from client, trying again");
             }
@@ -69,7 +73,8 @@ public class ClientProcess implements Serializable, Runnable {
     }
 
     // client constructor
-    public ClientProcess(Socket client, Game game) {
+    public ClientProcess(Socket client, Game game) throws Exception {
+        isHosting = false;
         jsonPackage = new JSONObject();
         this.client = client;
         this.game = game;
@@ -84,11 +89,11 @@ public class ClientProcess implements Serializable, Runnable {
         try {
             outputStream.write(game.name);
             outputStream.flush();
-            System.out.println("sent name");
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
         //reading server name
+        short iterations = 0;
         while (true) {
             try {
                 String name;
@@ -113,7 +118,10 @@ public class ClientProcess implements Serializable, Runnable {
             } catch (IOException e) {
                 System.err.println("Error retrieving name from server, trying again");
             }
-            System.err.println("reading");
+            iterations++;
+            if (iterations == 1000) {
+                throw new Exception();
+            }
         }
     }
 
@@ -181,7 +189,10 @@ public class ClientProcess implements Serializable, Runnable {
                     sendData();
                     receiveData();
                 } catch (IOException e) {
-                    System.err.println("Connection lost with server");
+                    if (!isHosting)
+                        System.err.println("Connection lost with server");
+                    else
+                        System.err.println("Connection lost with client");
                     System.err.println("Cleaning upp lost connection");
                     cleanupConnection();
                 } finally {
@@ -226,7 +237,7 @@ public class ClientProcess implements Serializable, Runnable {
                 System.out.println("Disconnected");
                 break;
             } catch (IOException e) {
-                System.out.println("Error Closing server Connection, trying again");
+                System.out.println("Error Closing server-client Connection, trying again");
             }
         }
     }

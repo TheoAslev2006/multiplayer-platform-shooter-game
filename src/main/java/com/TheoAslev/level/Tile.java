@@ -1,22 +1,22 @@
 package com.TheoAslev.level;
 
-import com.TheoAslev.server.Server;
 import com.TheoAslev.utils.FileReader;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;
-import java.io.Serializable;
 
-public class Tile{
+//tile class that used to give specific blocks textures and properties
+public class Tile {
 
     boolean platform;
     boolean ghost;
     public BufferedImage bufferedImage;
-    public Tile(TileTexture tileTexture){
+
+    public Tile(TileTexture tileTexture) {
         bufferedImage = null;
         String filePath = "src\\main\\resources\\textures\\tiles\\tileSet.png";
         //initializes buffered image with said tile texture
-        switch (tileTexture){
+        switch (tileTexture) {
             //initializes solid stone block
             case SOLID_STONE_BLOCK -> {
                 platform = false;
@@ -65,6 +65,7 @@ public class Tile{
         }
 
     }
+
     public boolean isPlatform() {
         return platform;
     }

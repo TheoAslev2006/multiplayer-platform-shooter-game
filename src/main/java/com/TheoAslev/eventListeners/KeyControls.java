@@ -3,9 +3,10 @@ package com.TheoAslev.eventListeners;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 
+//handles the key controls in the game
 public class KeyControls implements KeyListener {
 
-    public boolean right, left, jump, isHitBoxesVisible;
+    public boolean right, left, jump, down, isHitBoxesVisible;
 
     @Override
     public void keyTyped(KeyEvent e) {
@@ -19,6 +20,7 @@ public class KeyControls implements KeyListener {
         if (keyCode == KeyEvent.VK_A) left = true;
         if (keyCode == KeyEvent.VK_D) right = true;
         if (keyCode == KeyEvent.VK_SPACE) jump = true;
+        if (keyCode == KeyEvent.VK_S) down = true;
         if (keyCode == KeyEvent.VK_H && !isHitBoxesVisible) {
             isHitBoxesVisible = true;
         } else if (keyCode == KeyEvent.VK_H) {
@@ -33,5 +35,6 @@ public class KeyControls implements KeyListener {
         if (keyCode == KeyEvent.VK_A) left = false;
         if (keyCode == KeyEvent.VK_D) right = false;
         if (keyCode == KeyEvent.VK_SPACE) jump = false;
+        if (keyCode == KeyEvent.VK_S) down = false;
     }
 }

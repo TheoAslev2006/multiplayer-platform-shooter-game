@@ -1,6 +1,5 @@
-package com.TheoAslev.objects;
+package com.TheoAslev.entity;
 
-import com.TheoAslev.graphics.Game;
 import com.TheoAslev.utils.FileReader;
 
 import java.awt.*;
@@ -9,6 +8,7 @@ import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 
+//bullet class that creates a bullet with said angle and moves till it hits the end of the map
 public class Bullet {
     public int x;
     public int y;
@@ -33,7 +33,7 @@ public class Bullet {
         rectX = x;
         rectY = y;
         //rotates the bullet texture with a bi-linear transformation
-        affineTransform = AffineTransform.getRotateInstance(radians, 13, 13);
+        affineTransform = AffineTransform.getRotateInstance(radians, 16, 16);
         affineTransformOp = new AffineTransformOp(affineTransform, AffineTransformOp.TYPE_BILINEAR);
         try {
             bufferedImage = FileReader.loadFile(filepath);
@@ -45,12 +45,12 @@ public class Bullet {
 
     public void render(Graphics2D g2d, boolean showHitBox) {
         //renders bullet and square for viewing bullet angle
-        g2d.drawImage(affineTransformOp.filter(bufferedImage, null), x + 3, y, null);
+        g2d.drawImage(affineTransformOp.filter(bufferedImage, null), x, y, null);
         if (localBullet)
-            g2d.drawRect(rectX + 11, rectY + 10, 10, 10);
+            g2d.drawRect(rectX - 8, rectY + 16, 10, 10);
         if (showHitBox) {
             g2d.setColor(Color.BLACK);
-            g2d.drawRect(x, y, 32, 32);
+            g2d.drawRect(x + 8, y + 8, 16, 16);
         }
     }
 

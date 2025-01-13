@@ -1,8 +1,6 @@
 package com.TheoAslev.level;
 
-import java.util.HashMap;
-import java.util.Map;
-
+//enumeration for the specific model used in the map
 public enum Levels {
     Level1,
     Level2,

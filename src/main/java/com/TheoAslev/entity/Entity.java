@@ -1,4 +1,4 @@
-package com.TheoAslev.character;
+package com.TheoAslev.entity;
 
 import com.TheoAslev.utils.FileReader;
 
@@ -6,16 +6,15 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 
-public class Character {
+
+//this class is used for entities such as the player
+public class Entity {
     int x;
     int y;
     double velY;
     double velX;
-    int characterAnimationInstance = 0;
-    int health;
-    boolean dead;
-    boolean jump;
-    BufferedImage characterImage;
+    int entityAnimationInstance = 0;
+    BufferedImage entityImage;
     BufferedImage[] animation = new BufferedImage[3];
     String[] filePath = {
             "src\\main\\resources\\textures\\character\\CharacterNull.png"
@@ -24,7 +23,7 @@ public class Character {
             , "src\\main\\resources\\textures\\character\\Character_moving_2.png"
     };
 
-    public void loadCharacter() {
+    public void loadEntity() {
         //loads images from file with different animation stages
         boolean loaded = false;
         int instance = 0;
@@ -38,11 +37,11 @@ public class Character {
                 instance++;
                 if (instance == 5) {
                     try {
-                        animation[0] = FileReader.loadFile(filePath[characterAnimationInstance + 1]);
+                        animation[0] = FileReader.loadFile(filePath[entityAnimationInstance + 1]);
                         loaded = true;
                     } catch (IOException ex) {
                         try {
-                            characterImage = FileReader.loadFile(filePath[0]);
+                            entityImage = FileReader.loadFile(filePath[0]);
                         } catch (IOException exc) {
                             throw new RuntimeException(exc);
                         }
@@ -55,20 +54,20 @@ public class Character {
     public void tick(long threadRunTime) {
         //changes the player animation when moving and based on a long acting as cooldown
         if (velX != 0 && threadRunTime % 20 == 0) {
-            characterAnimationInstance = 2;
+            entityAnimationInstance = 2;
         } else if (velX != 0 && threadRunTime % 10 == 0) {
-            characterAnimationInstance = 1;
+            entityAnimationInstance = 1;
         }
         if (velX <= 0.7 && velX >= -0.7) {
-            characterAnimationInstance = 0;
+            entityAnimationInstance = 0;
         }
 
     }
 
-    public void renderCharacter(Graphics2D g2d, boolean movingRight, boolean movingLeft, String name) {
+    public void renderEntity(Graphics2D g2d, Point nameOffset, String name) {
         //draws character onto the screen with offsets
-        g2d.drawString(name, x + 7, y - 10);
-        g2d.drawImage(animation[characterAnimationInstance], x, y, null);
+        g2d.drawString(name, x + nameOffset.x, y - nameOffset.y);
+        g2d.drawImage(animation[entityAnimationInstance], x - 16, y, null);
     }
 
     public int getX() {
@@ -86,5 +85,6 @@ public class Character {
     public void setY(int y) {
         this.y = y;
     }
+
 }
 

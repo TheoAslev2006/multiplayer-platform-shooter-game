@@ -5,8 +5,8 @@ import com.TheoAslev.graphics.Game;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.ArrayList;
 
+//server sided class that connects client to server that also uses the client process to send and receive information
 public class Server implements Runnable {
     ServerSocket serverSocket;
     Game game;
@@ -24,17 +24,15 @@ public class Server implements Runnable {
 
     @Override
     public void run() {
-        //searches after new clients to bond to with the client process
-        while (true) {
-            Socket client = null;
-            try {
-                client = serverSocket.accept();
-            } catch (IOException e) {
-                System.out.println("could not find client");
-                continue;
-            }
-            System.out.println("Client has been accepted");
-            new Thread(new ClientProcess(client, this)).start();
+        //searches after client and then create a client process that handles information that is send from the server to the client and vice versa
+        Socket client = null;
+        try {
+            client = serverSocket.accept();
+        } catch (IOException e) {
+            System.out.println("could not find client");
         }
+        System.out.println("Client has been accepted");
+        new Thread(new ClientProcess(client, this)).start();
     }
+
 }
