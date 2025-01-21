@@ -96,6 +96,7 @@ public class ClientProcess implements Serializable, Runnable {
         short iterations = 0;
         while (true) {
             try {
+                //read name with inputstream with the help of a char buffer and stringBuilder for better performance
                 String name;
                 char[] buffer = new char[1024];
                 StringBuilder stringBuilder = new StringBuilder();
@@ -119,7 +120,8 @@ public class ClientProcess implements Serializable, Runnable {
                 System.err.println("Error retrieving name from server, trying again");
             }
             iterations++;
-            if (iterations == 1000) {
+            //if reading name takes to long throw exception and get sent back to start
+            if (iterations == 10000) {
                 throw new Exception();
             }
         }
